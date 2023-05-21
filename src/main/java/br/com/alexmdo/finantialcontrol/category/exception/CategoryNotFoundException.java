@@ -1,4 +1,4 @@
-package br.com.alexmdo.finantialcontrol.category;
+package br.com.alexmdo.finantialcontrol.category.exception;
 
 public class CategoryNotFoundException extends RuntimeException {
 

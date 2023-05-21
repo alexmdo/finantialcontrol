@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.alexmdo.finantialcontrol.user.dto.UserCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.user.dto.UserDto;
-import br.com.alexmdo.finantialcontrol.user.dto.UserMapper;
 import br.com.alexmdo.finantialcontrol.user.dto.UserUpdateRequestDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

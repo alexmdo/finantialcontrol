@@ -11,9 +11,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import br.com.alexmdo.finantialcontrol.category.exception.CategoryNotFoundException;
 import br.com.alexmdo.finantialcontrol.user.exception.UserAlreadyRegisteredException;
 import br.com.alexmdo.finantialcontrol.user.exception.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.log4j.Log4j2;
 
 @RestControllerAdvice
@@ -28,7 +31,7 @@ public class CustomErrorAdvice {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
-    @ExceptionHandler({ NotFoundException.class, UserNotFoundException.class })
+    @ExceptionHandler({ NotFoundException.class, UserNotFoundException.class, CategoryNotFoundException.class })
     public ResponseEntity<ErrorResponse> handleNotFoundException(Exception ex, HttpServletRequest request) {
         log.error("Not found error", ex);
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(),
@@ -51,7 +54,18 @@ public class CustomErrorAdvice {
         return ResponseEntity.badRequest().body(errors.stream().map(ValidationErrorResponse::new).toList());
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<List<ValidationErrorResponse>> handleError400(ConstraintViolationException e) {
+        log.error("Validation error", e);
+        var errors = e.getConstraintViolations();
+        return ResponseEntity.badRequest().body(errors.stream().map(ValidationErrorResponse::new).toList());
+    }
+
     private record ValidationErrorResponse(String field, String message) {
+
+        public ValidationErrorResponse(ConstraintViolation<?> error) {
+            this(error.getPropertyPath().toString(), error.getMessage());
+        }
 
         public ValidationErrorResponse(FieldError error) {
             this(error.getField(), error.getDefaultMessage());

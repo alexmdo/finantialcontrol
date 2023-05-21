@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import br.com.alexmdo.finantialcontrol.category.exception.CategoryNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service

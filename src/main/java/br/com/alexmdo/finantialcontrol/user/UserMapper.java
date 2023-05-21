@@ -1,8 +1,10 @@
-package br.com.alexmdo.finantialcontrol.user.dto;
+package br.com.alexmdo.finantialcontrol.user;
 
 import org.springframework.stereotype.Component;
 
-import br.com.alexmdo.finantialcontrol.user.User;
+import br.com.alexmdo.finantialcontrol.user.dto.UserCreateRequestDto;
+import br.com.alexmdo.finantialcontrol.user.dto.UserDto;
+import br.com.alexmdo.finantialcontrol.user.dto.UserUpdateRequestDto;
 
 @Component
 public class UserMapper {
