@@ -1,31 +1,27 @@
 package br.com.alexmdo.finantialcontrol.user.dto;
 
+import org.springframework.stereotype.Component;
+
 import br.com.alexmdo.finantialcontrol.user.User;
 
+@Component
 public class UserMapper {
 
-    private UserMapper() {
+    public User toEntity(UserCreateRequestDto createRequestDto) {
+        return new User(null, createRequestDto.firstName(), createRequestDto.lastName(), createRequestDto.email());
     }
 
-    public static UserDto toDto(User user) {
+    public User updateEntity(User existingUser, UserUpdateRequestDto updateRequestDto) {
+        return new User(
+                existingUser.getId(),
+                updateRequestDto.firstName(),
+                updateRequestDto.lastName(),
+                updateRequestDto.email()
+        );
+    }
+
+    public UserDto toDto(User user) {
         return new UserDto(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail());
     }
-
-    public static User fromCreateRequestDto(UserCreateRequestDto createRequest) {
-        User user = new User();
-        user.setFirstName(createRequest.firstName());
-        user.setLastName(createRequest.firstName());
-        user.setEmail(createRequest.firstName());
-        return user;
-    }
-
-    public static User fromUpdateRequestDto(Long userId, UserUpdateRequestDto updateRequest) {
-        User user = new User();
-        user.setId(userId);
-        user.setFirstName(updateRequest.firstName());
-        user.setLastName(updateRequest.lastName());
-        user.setEmail(updateRequest.email());
-        return user;
-    }
-
+    
 }

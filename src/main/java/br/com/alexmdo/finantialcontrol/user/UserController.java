@@ -18,45 +18,56 @@ import br.com.alexmdo.finantialcontrol.user.dto.UserDto;
 import br.com.alexmdo.finantialcontrol.user.dto.UserMapper;
 import br.com.alexmdo.finantialcontrol.user.dto.UserUpdateRequestDto;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/users")
-@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
-    @GetMapping
-    public ResponseEntity<Page<UserDto>> getUsers(Pageable pageable) {
-        Page<UserDto> users = userService.getAllUsers(pageable).map(UserMapper::toDto);
-        return ResponseEntity.ok(users);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
-        UserDto user = UserMapper.toDto(userService.getUserById(id));
-        return ResponseEntity.ok(user);
+    public UserController(UserService userService, UserMapper userMapper) {
+        this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody @Valid UserCreateRequestDto createRequest) {
-        UserDto createdUser = UserMapper.toDto(userService.createUser(UserMapper.fromCreateRequestDto(createRequest)));
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserCreateRequestDto createRequestDto) {
+        var user = userMapper.toEntity(createRequestDto);
+        var createdUser = userService.createUser(user);
+        var responseDto = userMapper.toDto(createdUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<UserDto> updateUser(
-            @PathVariable Long id,
-            @RequestBody @Valid UserUpdateRequestDto updateRequest) {
-        UserDto updatedUser = UserMapper
-                .toDto(userService.updateUser(UserMapper.fromUpdateRequestDto(id, updateRequest)));
-        return ResponseEntity.ok(updatedUser);
+            @PathVariable("id") Long id,
+            @Valid @RequestBody UserUpdateRequestDto updateRequestDto) {
+        var existingUser = userService.getUserById(id);
+        var updatedUser = userMapper.updateEntity(existingUser, updateRequestDto);
+        var savedUser = userService.updateUser(updatedUser);
+        var responseDto = userMapper.toDto(savedUser);
+        return ResponseEntity.ok(responseDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping
+    public ResponseEntity<Page<UserDto>> getUsers(Pageable pageable) {
+        var userPage = userService.getAllUsers(pageable);
+        var responsePage = userPage.map(userMapper::toDto);
+        return ResponseEntity.ok(responsePage);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable("id") Long id) {
+        var user = userService.getUserById(id);
+        var responseDto = userMapper.toDto(user);
+        return ResponseEntity.ok(responseDto);
+    }
+
 }

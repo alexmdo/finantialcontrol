@@ -3,6 +3,8 @@ package br.com.alexmdo.finantialcontrol.user;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
@@ -61,6 +63,8 @@ class UserControllerTest {
         var userId = 1L;
         var updateRequest = new UserUpdateRequestDto("John", "Doe", "johndoe@example.com");
         var expectedUser = new User(userId, "John", "Doe", "johndoe@example.com");
+
+        when(userService.updateUser(any())).thenReturn(expectedUser);
 
         given()
             .contentType(ContentType.JSON)
