@@ -11,10 +11,11 @@ import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 
 import br.com.alexmdo.finantialcontrol.user.dto.UserCreateRequestDto;
@@ -25,7 +26,7 @@ import io.restassured.http.ContentType;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class UserControllerTest {
 
-    @Mock
+    @MockBean
     private UserService userService;
 
     @InjectMocks
@@ -44,6 +45,8 @@ class UserControllerTest {
     void testCreateUser() {
         var createRequestDto = new UserCreateRequestDto("John", "Doe", "johndoe@example.com");
         var expectedUser = new User(1L, "John", "Doe", "johndoe@example.com");
+
+        when(userService.createUser(any())).thenReturn(expectedUser);
 
         given()
             .contentType(ContentType.JSON)
@@ -64,6 +67,7 @@ class UserControllerTest {
         var updateRequest = new UserUpdateRequestDto("John", "Doe", "johndoe@example.com");
         var expectedUser = new User(userId, "John", "Doe", "johndoe@example.com");
 
+        when(userService.getUserById(userId)).thenReturn(expectedUser);
         when(userService.updateUser(any())).thenReturn(expectedUser);
 
         given()
@@ -96,6 +100,8 @@ class UserControllerTest {
         var userId = 1L;
         var expectedUser = new User(userId, "John", "Doe", "johndoe@example.com");
 
+        when(userService.getUserById(userId)).thenReturn(expectedUser);
+
         given()
             .pathParam("userId", userId)
         .when()
@@ -113,16 +119,19 @@ class UserControllerTest {
         var expectedUserList = Arrays.asList(
                 new User(1L, "John", "Doe", "johndoe@example.com"),
                 new User(2L, "Jane", "Smith", "janesmith@example.com"));
+        var pages = new PageImpl<>(expectedUserList);
+
+        when(userService.getAllUsers(any())).thenReturn(pages);
 
         given()
         .when()
             .get("/api/users")
         .then()
             .statusCode(HttpStatus.OK.value())
-            .body("size()", equalTo(expectedUserList.size()))
-            .body("id", hasItems(1, 2))
-            .body("firstName", hasItems("John", "Jane"))
-            .body("lastName", hasItems("Doe", "Smith"))
-            .body("email", hasItems("johndoe@example.com", "janesmith@example.com"));
+            .body("content.size()", equalTo(pages.getSize()))
+            .body("content.id", hasItems(1, 2))
+            .body("content.firstName", hasItems("John", "Jane"))
+            .body("content.lastName", hasItems("Doe", "Smith"))
+            .body("content.email", hasItems("johndoe@example.com", "janesmith@example.com"));
     }
 }

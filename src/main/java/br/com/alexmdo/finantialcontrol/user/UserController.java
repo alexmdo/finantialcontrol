@@ -18,18 +18,15 @@ import br.com.alexmdo.finantialcontrol.user.dto.UserDto;
 import br.com.alexmdo.finantialcontrol.user.dto.UserMapper;
 import br.com.alexmdo.finantialcontrol.user.dto.UserUpdateRequestDto;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
-
-    public UserController(UserService userService, UserMapper userMapper) {
-        this.userService = userService;
-        this.userMapper = userMapper;
-    }
 
     @PostMapping
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserCreateRequestDto createRequestDto) {
