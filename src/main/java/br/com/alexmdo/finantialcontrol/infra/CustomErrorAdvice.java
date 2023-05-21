@@ -1,5 +1,6 @@
 package br.com.alexmdo.finantialcontrol.infra;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
@@ -17,26 +18,36 @@ public class CustomErrorAdvice {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
-    @ExceptionHandler({NotFoundException.class, UserNotFoundException.class})
+    @ExceptionHandler({ NotFoundException.class, UserNotFoundException.class })
     public ResponseEntity<ErrorResponse> handleNotFoundException(Exception ex) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase(), ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<List<ErrorValidationData>> handleError400(MethodArgumentNotValidException e) {
+    public ResponseEntity<List<ValidationErrorResponse>> handleError400(MethodArgumentNotValidException e) {
         var errors = e.getFieldErrors();
-        return ResponseEntity.badRequest().body(errors.stream().map(ErrorValidationData::new).toList());
+        return ResponseEntity.badRequest().body(errors.stream().map(ValidationErrorResponse::new).toList());
     }
 
-    private record ErrorValidationData(String field, String message) {
+    private record ValidationErrorResponse(String field, String message) {
 
-        public ErrorValidationData(FieldError error) {
+        public ValidationErrorResponse(FieldError error) {
             this(error.getField(), error.getDefaultMessage());
+        }
+
+    }
+
+    private record ErrorResponse(LocalDateTime timestamp, int status, String error, String message) {
+
+        public ErrorResponse(int status, String error, String message) {
+            this(LocalDateTime.now(), status, error, message);
         }
 
     }
