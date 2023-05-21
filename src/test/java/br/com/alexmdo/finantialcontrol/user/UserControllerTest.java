@@ -1,11 +1,8 @@
 package br.com.alexmdo.finantialcontrol.user;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 
 import java.util.Arrays;
 
@@ -14,13 +11,16 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 
 import br.com.alexmdo.finantialcontrol.user.dto.UserCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.user.dto.UserUpdateRequestDto;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class UserControllerTest {
 
     @Mock
@@ -29,27 +29,31 @@ class UserControllerTest {
     @InjectMocks
     private UserController userController;
 
+    @LocalServerPort
+    int port;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        RestAssured.port = port;
     }
 
     @Test
     void testCreateUser() {
-        var userId = 1L;
         var createRequestDto = new UserCreateRequestDto("John", "Doe", "johndoe@example.com");
-        var expectedUser = new User(userId, "John", "Doe", "johndoe@example.com");
+        var expectedUser = new User(1L, "John", "Doe", "johndoe@example.com");
 
-        when(userService.createUser(any())).thenReturn(expectedUser);
-
-        var response = userController.createUser(createRequestDto);
-
-        verify(userService, times(1)).createUser(any());
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(expectedUser.getId(), response.getBody().id());
-        assertEquals(expectedUser.getFirstName(), response.getBody().firstName());
-        assertEquals(expectedUser.getLastName(), response.getBody().lastName());
-        assertEquals(expectedUser.getEmail(), response.getBody().email());
+        given()
+            .contentType(ContentType.JSON)
+            .body(createRequestDto)
+        .when()
+            .post("/api/users")
+        .then()
+            .statusCode(HttpStatus.CREATED.value())
+            .body("id", equalTo(expectedUser.getId().intValue()))
+            .body("firstName", equalTo(expectedUser.getFirstName()))
+            .body("lastName", equalTo(expectedUser.getLastName()))
+            .body("email", equalTo(expectedUser.getEmail()));
     }
 
     @Test
@@ -58,26 +62,29 @@ class UserControllerTest {
         var updateRequest = new UserUpdateRequestDto("John", "Doe", "johndoe@example.com");
         var expectedUser = new User(userId, "John", "Doe", "johndoe@example.com");
 
-        when(userService.updateUser(any())).thenReturn(expectedUser);
-
-        var response = userController.updateUser(userId, updateRequest);
-
-        verify(userService, times(1)).updateUser(any());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedUser.getId(), response.getBody().id());
-        assertEquals(expectedUser.getFirstName(), response.getBody().firstName());
-        assertEquals(expectedUser.getLastName(), response.getBody().lastName());
-        assertEquals(expectedUser.getEmail(), response.getBody().email());
+        given()
+            .contentType(ContentType.JSON)
+            .body(updateRequest)
+        .when()
+            .put("/api/users/{userId}", userId)
+        .then()
+            .statusCode(HttpStatus.OK.value())
+            .body("id", equalTo(expectedUser.getId().intValue()))
+            .body("firstName", equalTo(expectedUser.getFirstName()))
+            .body("lastName", equalTo(expectedUser.getLastName()))
+            .body("email", equalTo(expectedUser.getEmail()));
     }
 
     @Test
     void testDeleteUser() {
         var userId = 1L;
 
-        var response = userController.deleteUser(userId);
-
-        verify(userService, times(1)).deleteUser(userId);
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        given()
+            .pathParam("userId", userId)
+        .when()
+            .delete("/api/users/{userId}")
+        .then()
+            .statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
@@ -85,16 +92,16 @@ class UserControllerTest {
         var userId = 1L;
         var expectedUser = new User(userId, "John", "Doe", "johndoe@example.com");
 
-        when(userService.getUserById(userId)).thenReturn(expectedUser);
-
-        var response = userController.getUserById(userId);
-
-        verify(userService, times(1)).getUserById(userId);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedUser.getId(), response.getBody().id());
-        assertEquals(expectedUser.getFirstName(), response.getBody().firstName());
-        assertEquals(expectedUser.getLastName(), response.getBody().lastName());
-        assertEquals(expectedUser.getEmail(), response.getBody().email());
+        given()
+            .pathParam("userId", userId)
+        .when()
+            .get("/api/users/{userId}")
+        .then()
+            .statusCode(HttpStatus.OK.value())
+            .body("id", equalTo(expectedUser.getId().intValue()))
+            .body("firstName", equalTo(expectedUser.getFirstName()))
+            .body("lastName", equalTo(expectedUser.getLastName()))
+            .body("email", equalTo(expectedUser.getEmail()));
     }
 
     @Test
@@ -103,23 +110,15 @@ class UserControllerTest {
                 new User(1L, "John", "Doe", "johndoe@example.com"),
                 new User(2L, "Jane", "Smith", "janesmith@example.com"));
 
-        var pageable = mock(Pageable.class);
-        var userPage = new PageImpl<>(expectedUserList, pageable, expectedUserList.size());
-
-        when(userService.getAllUsers(any())).thenReturn(userPage);
-
-        var response = userController.getUsers(pageable);
-
-        verify(userService, times(1)).getAllUsers(any());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedUserList.size(), response.getBody().getSize());
-        for (int i = 0; i < expectedUserList.size(); i++) {
-            var expectedUser = expectedUserList.get(i);
-            var userDto = response.getBody().getContent().get(i);
-            assertEquals(expectedUser.getId(), userDto.id());
-            assertEquals(expectedUser.getFirstName(), userDto.firstName());
-            assertEquals(expectedUser.getLastName(), userDto.lastName());
-            assertEquals(expectedUser.getEmail(), userDto.email());
-        }
+        given()
+        .when()
+            .get("/api/users")
+        .then()
+            .statusCode(HttpStatus.OK.value())
+            .body("size()", equalTo(expectedUserList.size()))
+            .body("id", hasItems(1, 2))
+            .body("firstName", hasItems("John", "Jane"))
+            .body("lastName", hasItems("Doe", "Smith"))
+            .body("email", hasItems("johndoe@example.com", "janesmith@example.com"));
     }
 }
