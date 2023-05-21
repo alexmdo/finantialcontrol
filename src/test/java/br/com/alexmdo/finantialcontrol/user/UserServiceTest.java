@@ -1,6 +1,7 @@
 package br.com.alexmdo.finantialcontrol.user;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 class UserServiceTest {
 
@@ -106,11 +109,14 @@ class UserServiceTest {
         userList.add(new User());
         userList.add(new User());
 
-        when(userRepository.findAll()).thenReturn(userList);
+        var pageable = mock(Pageable.class);
+        var userPage = new PageImpl<>(userList, pageable, userList.size());
 
-        var retrievedUsers = userService.getAllUsers();
+        when(userRepository.findAll(pageable)).thenReturn(userPage);
 
-        verify(userRepository, times(1)).findAll();
-        assertEquals(userList, retrievedUsers);
+        var retrievedUsers = userService.getAllUsers(pageable);
+
+        verify(userRepository, times(1)).findAll(pageable);
+        assertEquals(userPage, retrievedUsers);
     }
 }

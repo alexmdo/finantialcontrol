@@ -1,4 +1,4 @@
-package br.com.alexmdo.finantialcontrol.user;
+package br.com.alexmdo.finantialcontrol.user.exception;
 
 public class UserNotFoundException extends RuntimeException {
 
