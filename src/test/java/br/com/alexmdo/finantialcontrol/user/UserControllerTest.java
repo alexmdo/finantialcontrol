@@ -42,7 +42,7 @@ class UserControllerTest {
     }
 
     @Test
-    void testCreateUser() {
+    void shouldCreateUser() {
         var createRequestDto = new UserCreateRequestDto("John", "Doe", "johndoe@example.com");
         var expectedUser = new User(1L, "John", "Doe", "johndoe@example.com");
 
@@ -62,7 +62,7 @@ class UserControllerTest {
     }
 
     @Test
-    void testUpdateUser() {
+    void shouldUpdateUser() {
         var userId = 1L;
         var updateRequest = new UserUpdateRequestDto("John", "Doe", "johndoe@example.com");
         var expectedUser = new User(userId, "John", "Doe", "johndoe@example.com");
@@ -84,7 +84,7 @@ class UserControllerTest {
     }
 
     @Test
-    void testDeleteUser() {
+    void shouldDeleteUser() {
         var userId = 1L;
 
         given()
@@ -96,7 +96,7 @@ class UserControllerTest {
     }
 
     @Test
-    void testGetUserById() {
+    void shouldGetUserById() {
         var userId = 1L;
         var expectedUser = new User(userId, "John", "Doe", "johndoe@example.com");
 
@@ -115,7 +115,7 @@ class UserControllerTest {
     }
 
     @Test
-    void testGetAllUsers() {
+    void shouldGetAllUsers() {
         var expectedUserList = Arrays.asList(
                 new User(1L, "John", "Doe", "johndoe@example.com"),
                 new User(2L, "Jane", "Smith", "janesmith@example.com"));
