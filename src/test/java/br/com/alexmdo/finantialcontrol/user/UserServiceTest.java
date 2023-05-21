@@ -1,7 +1,10 @@
 package br.com.alexmdo.finantialcontrol.user;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +20,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import br.com.alexmdo.finantialcontrol.user.exception.UserAlreadyRegisteredException;
+
 class UserServiceTest {
 
     @Mock
@@ -31,34 +36,93 @@ class UserServiceTest {
     }
 
     @Test
-    void testCreateUser() {
-        var user = new User();
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail("johndoe@example.com");
+    public void testCreateUser_Success() {
+        // Arrange
+        User user = new User();
+        user.setEmail("test@example.com");
 
+        // Mock the repository to return false (email does not exist)
+        when(userRepository.existsByEmail(user.getEmail())).thenReturn(false);
+
+        // Mock the repository to return the saved user
         when(userRepository.save(user)).thenReturn(user);
 
-        var createdUser = userService.createUser(user);
+        // Act
+        User createdUser = userService.createUser(user);
 
+        // Assert
+        assertNotNull(createdUser);
+        assertEquals(user.getEmail(), createdUser.getEmail());
+        verify(userRepository, times(1)).existsByEmail(user.getEmail());
         verify(userRepository, times(1)).save(user);
-        assertEquals(user, createdUser);
     }
 
     @Test
-    void testUpdateUser() {
-        var user = new User();
-        user.setId(1L);
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail("johndoe@example.com");
+    public void testCreateUser_EmailAlreadyExists() {
+        // Arrange
+        User user = new User();
+        user.setEmail("test@example.com");
 
+        // Mock the repository to return true (email already exists)
+        when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(UserAlreadyRegisteredException.class, () -> {
+            userService.createUser(user);
+        });
+
+        verify(userRepository, times(1)).existsByEmail(user.getEmail());
+        verify(userRepository, never()).save(user);
+    }
+
+    @Test
+    public void testUpdateUser_Success() {
+        // Arrange
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("test@example.com");
+
+        // Mock the repository to return the user reference
+        when(userRepository.getReferenceById(user.getId())).thenReturn(user);
+
+        // Mock the repository to return false (email does not exist)
+        when(userRepository.existsByEmail(user.getEmail())).thenReturn(false);
+
+        // Mock the repository to return the saved user
         when(userRepository.save(user)).thenReturn(user);
 
-        var updatedUser = userService.updateUser(user);
+        // Act
+        User updatedUser = userService.updateUser(user);
 
+        // Assert
+        assertNotNull(updatedUser);
+        assertEquals(user.getEmail(), updatedUser.getEmail());
+        verify(userRepository, times(1)).getReferenceById(user.getId());
+        verify(userRepository, times(1)).existsByEmail(user.getEmail());
         verify(userRepository, times(1)).save(user);
-        assertEquals(user, updatedUser);
+    }
+
+    @Test
+    public void testUpdateUser_EmailAlreadyExists() {
+        // Arrange
+        var userId = 1L;
+        var user = new User(userId, "John", "Doe", "test@example.com");
+        var userToUpdate = new User(userId, "John", "Doe", "test@emailchanged.com");
+
+        // Mock the repository to return the user reference
+        when(userRepository.getReferenceById(user.getId())).thenReturn(user);
+
+        // Mock the repository to return true (email already exists)
+        when(userRepository.existsByEmail(userToUpdate.getEmail())).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(UserAlreadyRegisteredException.class, () -> {
+            userService.updateUser(userToUpdate);
+        });
+
+        verify(userRepository, times(1)).getReferenceById(user.getId());
+        verify(userRepository, times(1)).existsByEmail(userToUpdate.getEmail());
+        verify(userRepository, never()).save(user);
     }
 
     @Test

@@ -11,27 +11,42 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import br.com.alexmdo.finantialcontrol.user.exception.UserAlreadyRegisteredException;
 import br.com.alexmdo.finantialcontrol.user.exception.UserNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.log4j.Log4j2;
 
 @RestControllerAdvice
+@Log4j2
 public class CustomErrorAdvice {
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
+        log.error("Unexpected error", ex);
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), ex.getMessage());
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), ex.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
     @ExceptionHandler({ NotFoundException.class, UserNotFoundException.class })
-    public ResponseEntity<ErrorResponse> handleNotFoundException(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleNotFoundException(Exception ex, HttpServletRequest request) {
+        log.error("Not found error", ex);
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(),
-                HttpStatus.NOT_FOUND.getReasonPhrase(), ex.getMessage());
+                HttpStatus.NOT_FOUND.getReasonPhrase(), ex.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler({ UserAlreadyRegisteredException.class })
+    public ResponseEntity<ErrorResponse> handleBusinessException(Exception ex, HttpServletRequest request) {
+        log.error("Precondition error", ex);
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.PRECONDITION_FAILED.value(),
+                HttpStatus.PRECONDITION_FAILED.getReasonPhrase(), ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(errorResponse);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<List<ValidationErrorResponse>> handleError400(MethodArgumentNotValidException e) {
+        log.error("Validation error", e);
         var errors = e.getFieldErrors();
         return ResponseEntity.badRequest().body(errors.stream().map(ValidationErrorResponse::new).toList());
     }
@@ -44,10 +59,10 @@ public class CustomErrorAdvice {
 
     }
 
-    private record ErrorResponse(LocalDateTime timestamp, int status, String error, String message) {
+    private record ErrorResponse(LocalDateTime timestamp, int status, String error, String message, String path) {
 
-        public ErrorResponse(int status, String error, String message) {
-            this(LocalDateTime.now(), status, error, message);
+        public ErrorResponse(int status, String error, String message, String path) {
+            this(LocalDateTime.now(), status, error, message, path);
         }
 
     }
