@@ -14,6 +14,7 @@ import br.com.alexmdo.finantialcontrol.category.dto.CategoryCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.category.dto.CategoryUpdateRequestDto;
 import br.com.alexmdo.finantialcontrol.user.User;
 import br.com.alexmdo.finantialcontrol.user.UserRepository;
+import io.restassured.RestAssured;
     
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CategoryControllerTest {
@@ -30,6 +31,7 @@ class CategoryControllerTest {
     @BeforeEach
     void setUp() {
         categoryRepository.deleteAll();
+        RestAssured.port = port;
     }
 
     @Test
@@ -40,7 +42,6 @@ class CategoryControllerTest {
                 "Food", "red", "utensils", Category.Type.EXPENSE, newUser.getId());
 
         given()
-            .port(port)
             .contentType("application/json")
             .body(createRequestDto)
         .when()
@@ -64,7 +65,6 @@ class CategoryControllerTest {
                 "Groceries", "green", "shopping-cart", Category.Type.EXPENSE);
 
         given()
-            .port(port)
             .contentType("application/json")
             .body(updateRequestDto)
         .when()
@@ -85,7 +85,6 @@ class CategoryControllerTest {
         category = categoryRepository.save(category);
 
         given()
-            .port(port)
         .when()
             .delete("/api/categories/{id}", category.getId())
         .then()
@@ -102,7 +101,6 @@ class CategoryControllerTest {
         category2 = categoryRepository.save(category2);
 
         given()
-            .port(port)
         .when()
             .get("/api/categories")
         .then()
@@ -126,7 +124,6 @@ class CategoryControllerTest {
         category = categoryRepository.save(category);
 
         given()
-            .port(port)
         .when()
             .get("/api/categories/{id}", category.getId())
         .then()
