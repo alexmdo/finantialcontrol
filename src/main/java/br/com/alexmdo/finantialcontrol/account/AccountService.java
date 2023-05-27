@@ -2,6 +2,8 @@ package br.com.alexmdo.finantialcontrol.account;
 
 import java.math.BigDecimal;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +23,7 @@ public class AccountService {
     }
 
     public void deleteAccount(Long id) {
-        Account account = getAccountById(id);
+        var account = getAccountById(id);
         if (account.isArchived()) {
             accountRepository.delete(account);
         } else {
@@ -35,15 +37,19 @@ public class AccountService {
     }
 
     public Account archiveAccount(Long id) {
-        Account account = getAccountById(id);
+        var account = getAccountById(id);
         account.setArchived(true);
         return accountRepository.save(account);
     }
 
     public Account updateInitialAmount(Long id, BigDecimal amount) {
-        Account account = getAccountById(id);
+        var account = getAccountById(id);
         account.setInitialAmount(amount);
         return accountRepository.save(account);
+    }
+
+    public Page<Account> getAllAccounts(Pageable pageable) {
+        return accountRepository.findAll(pageable);
     }
 
 }
