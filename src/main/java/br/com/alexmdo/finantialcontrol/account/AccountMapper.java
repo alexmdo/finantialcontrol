@@ -6,7 +6,6 @@ import br.com.alexmdo.finantialcontrol.account.dto.AccountCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.account.dto.AccountDto;
 import br.com.alexmdo.finantialcontrol.account.dto.AccountUpdateRequestDto;
 import br.com.alexmdo.finantialcontrol.user.User;
-import br.com.alexmdo.finantialcontrol.user.dto.UserDto;
 
 @Component
 public class AccountMapper {
@@ -20,8 +19,7 @@ public class AccountMapper {
                 account.getAccountType(),
                 account.getColor(),
                 account.getIcon(),
-                account.isArchived(),
-                UserDto.fromEntity(account.getUser())
+                account.isArchived()
         );
     }
 
@@ -40,11 +38,21 @@ public class AccountMapper {
     }
 
     public Account updateEntity(Account account, AccountUpdateRequestDto updateRequestDto) {
-        account.setFinancialInstitution(updateRequestDto.financialInstitution());
-        account.setDescription(updateRequestDto.description());
-        account.setAccountType(updateRequestDto.accountType());
-        account.setColor(updateRequestDto.color());
-        account.setIcon(updateRequestDto.icon());
+        if (updateRequestDto.financialInstitution() != null) {
+            account.setFinancialInstitution(updateRequestDto.financialInstitution());
+        }
+        if (updateRequestDto.description() != null) {
+            account.setDescription(updateRequestDto.description());
+        }
+        if (updateRequestDto.accountType() != null) {
+            account.setAccountType(updateRequestDto.accountType());
+        }
+        if (updateRequestDto.color() != null) {
+            account.setColor(updateRequestDto.color());
+        }
+        if (updateRequestDto.icon() != null) {
+            account.setIcon(updateRequestDto.icon());
+        }
 
         return account;
     }

@@ -1,0 +1,292 @@
+{
+    "client": "Thunder Client",
+    "collectionName": "controle-financeiro",
+    "dateExported": "2023-05-29T01:38:02.280Z",
+    "version": "1.1",
+    "folders": [
+        {
+            "_id": "b2e5f17d-2c69-4b1e-9d3c-d27352bb626b",
+            "name": "users",
+            "containerId": "",
+            "created": "2023-05-21T02:44:15.088Z",
+            "sortNum": 10000
+        },
+        {
+            "_id": "43cce5e5-0799-4c4e-91c8-ce9cc16387d6",
+            "name": "categories",
+            "containerId": "",
+            "created": "2023-05-21T19:16:25.367Z",
+            "sortNum": 20000
+        },
+        {
+            "_id": "42482fd4-1ccc-4142-a52e-d8c1c2bc65e9",
+            "name": "account",
+            "containerId": "",
+            "created": "2023-05-29T01:19:13.750Z",
+            "sortNum": 30000
+        }
+    ],
+    "requests": [
+        {
+            "_id": "4f72c065-75c8-4689-9eab-132f5bf6da02",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "b2e5f17d-2c69-4b1e-9d3c-d27352bb626b",
+            "name": "new user",
+            "url": "{{base_url}}/api/users",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2023-05-21T02:44:58.066Z",
+            "modified": "2023-05-21T18:43:12.702Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@another.com\"\n}",
+                "form": []
+            },
+            "tests": [
+                {
+                    "type": "set-env-var",
+                    "custom": "json.id",
+                    "action": "setto",
+                    "value": "{{user_id}}"
+                }
+            ]
+        },
+        {
+            "_id": "ad158cdc-8160-463f-8617-b82609b86837",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "43cce5e5-0799-4c4e-91c8-ce9cc16387d6",
+            "name": "new category",
+            "url": "{{base_url}}/api/categories",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2023-05-21T19:16:25.367Z",
+            "modified": "2023-05-21T19:39:12.587Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"Food\",\n  \"color\": \"red\",\n  \"icon\": \"utensils\",\n  \"type\": \"EXPENSE\",\n  \"userId\": -1\n}\n",
+                "form": []
+            },
+            "tests": [
+                {
+                    "type": "set-env-var",
+                    "custom": "json.id",
+                    "action": "setto",
+                    "value": "{{category_id}}"
+                }
+            ]
+        },
+        {
+            "_id": "e28af915-2f49-498f-8ea2-792649fef44e",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "42482fd4-1ccc-4142-a52e-d8c1c2bc65e9",
+            "name": "new account",
+            "url": "{{base_url}}/api/accounts",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2023-05-29T01:19:13.750Z",
+            "modified": "2023-05-29T01:30:47.851Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"initialAmount\": 1000,\n  \"financialInstitution\": \"Bank\",\n  \"description\": \"Savings Account\",\n  \"accountType\": \"SAVING_ACCOUNT\",\n  \"color\": \"blue\",\n  \"icon\": \"piggy-bank\",\n  \"userId\": \"{{user_id}}\"\n}",
+                "form": []
+            },
+            "tests": [
+                {
+                    "type": "set-env-var",
+                    "custom": "json.id",
+                    "action": "setto",
+                    "value": "{{category_id}}"
+                }
+            ]
+        },
+        {
+            "_id": "134ecccd-5494-4b5b-862a-674ec5e076b3",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "b2e5f17d-2c69-4b1e-9d3c-d27352bb626b",
+            "name": "all users",
+            "url": "{{base_url}}/api/users",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2023-05-21T13:50:57.334Z",
+            "modified": "2023-05-21T13:51:03.898Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "22ea7470-43f0-4d74-8614-4aae07d82ef5",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "43cce5e5-0799-4c4e-91c8-ce9cc16387d6",
+            "name": "all categories",
+            "url": "{{base_url}}/api/categories",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2023-05-21T19:16:25.368Z",
+            "modified": "2023-05-21T19:31:54.567Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "1fa23fa5-bd3e-49e0-b816-479e6fa8abd1",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "42482fd4-1ccc-4142-a52e-d8c1c2bc65e9",
+            "name": "all accounts",
+            "url": "{{base_url}}/api/accounts",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2023-05-29T01:19:13.751Z",
+            "modified": "2023-05-29T01:20:22.408Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "02a7a014-26bf-4698-a5f5-72848539d409",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "b2e5f17d-2c69-4b1e-9d3c-d27352bb626b",
+            "name": "user by id",
+            "url": "{{base_url}}/api/users/{{user_id}}",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2023-05-21T14:53:02.402Z",
+            "modified": "2023-05-21T15:48:25.286Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "cd710bdc-c752-4ab3-884b-f9b92126117b",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "43cce5e5-0799-4c4e-91c8-ce9cc16387d6",
+            "name": "category by id",
+            "url": "{{base_url}}/api/categories/{{category_id}}",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2023-05-21T19:16:25.369Z",
+            "modified": "2023-05-21T19:19:40.492Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "b6b420c8-6c86-4391-8f14-ec3e3a02fc48",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "42482fd4-1ccc-4142-a52e-d8c1c2bc65e9",
+            "name": "account by id",
+            "url": "{{base_url}}/api/accounts/{{category_id}}",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2023-05-29T01:19:13.752Z",
+            "modified": "2023-05-29T01:20:25.348Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "0b52d888-c7d4-40a5-bbce-88690f1e94a5",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "b2e5f17d-2c69-4b1e-9d3c-d27352bb626b",
+            "name": "user by id",
+            "url": "{{base_url}}/api/users/{{user_id}}",
+            "method": "DELETE",
+            "sortNum": 40000,
+            "created": "2023-05-21T15:44:39.172Z",
+            "modified": "2023-05-21T15:48:29.696Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "f1a7f26c-b105-4a3a-b5a2-476f86833420",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "43cce5e5-0799-4c4e-91c8-ce9cc16387d6",
+            "name": "category by id",
+            "url": "{{base_url}}/api/categories/{{category_id}}",
+            "method": "DELETE",
+            "sortNum": 40000,
+            "created": "2023-05-21T19:16:25.370Z",
+            "modified": "2023-05-21T19:38:52.396Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "71cb2b35-efd5-4590-be3d-25e7553c5072",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "42482fd4-1ccc-4142-a52e-d8c1c2bc65e9",
+            "name": "account by id",
+            "url": "{{base_url}}/api/accounts/{{category_id}}",
+            "method": "DELETE",
+            "sortNum": 40000,
+            "created": "2023-05-29T01:19:13.753Z",
+            "modified": "2023-05-29T01:20:27.966Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "d25e6617-2670-4bc3-af47-5cb714e5e082",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "b2e5f17d-2c69-4b1e-9d3c-d27352bb626b",
+            "name": "user by id",
+            "url": "{{base_url}}/api/users/{{user_id}}",
+            "method": "PUT",
+            "sortNum": 50000,
+            "created": "2023-05-21T15:45:40.030Z",
+            "modified": "2023-05-21T15:48:33.451Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Doe\",\n  \"email\": \"maria.doe@example.com\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "62cb7fd0-fe45-417d-b7c8-a47a78f65301",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "43cce5e5-0799-4c4e-91c8-ce9cc16387d6",
+            "name": "category by id",
+            "url": "{{base_url}}/api/categories/{{category_id}}",
+            "method": "PUT",
+            "sortNum": 50000,
+            "created": "2023-05-21T19:16:25.371Z",
+            "modified": "2023-05-21T19:34:48.887Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"Salary\",\n  \"color\": \"green\",\n  \"icon\": \"money-bill\",\n  \"type\": \"INCOME\"\n}\n",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "f04beaff-4f83-4928-b2da-b97b932e8a73",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "42482fd4-1ccc-4142-a52e-d8c1c2bc65e9",
+            "name": "account by id",
+            "url": "{{base_url}}/api/accounts/{{category_id}}",
+            "method": "PUT",
+            "sortNum": 50000,
+            "created": "2023-05-29T01:19:13.754Z",
+            "modified": "2023-05-29T01:29:46.968Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"financialInstitution\": \"New Bank\",\n  \"description\": \"New Description\",\n  \"accountType\": \"CHECKING_ACCOUNT\",\n  \"color\": \"red\",\n  \"icon\": \"credit-card\"\n}",
+                "form": []
+            },
+            "tests": []
+        }
+    ]
+}

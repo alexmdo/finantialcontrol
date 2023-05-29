@@ -3,7 +3,6 @@ package br.com.alexmdo.finantialcontrol.account.dto;
 import java.math.BigDecimal;
 
 import br.com.alexmdo.finantialcontrol.account.AccountType;
-import br.com.alexmdo.finantialcontrol.user.dto.UserDto;
 
 public record AccountDto(
         Long id,
@@ -13,7 +12,6 @@ public record AccountDto(
         AccountType accountType,
         String color,
         String icon,
-        Boolean isArchived,
-        UserDto user
+        Boolean isArchived
 ) {
 }

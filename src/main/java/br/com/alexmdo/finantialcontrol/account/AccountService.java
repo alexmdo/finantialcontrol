@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.alexmdo.finantialcontrol.account.exception.AccountNotArchivedException;
 import br.com.alexmdo.finantialcontrol.account.exception.AccountNotFoundException;
+import br.com.alexmdo.finantialcontrol.user.UserService;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -15,8 +16,11 @@ import lombok.RequiredArgsConstructor;
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private final UserService userService;
 
     public Account createAccount(Account account) {
+        var userFound = userService.getUserById(account.getUser().getId());
+        account.setUser(userFound);
         return accountRepository.save(account);
     }
 
