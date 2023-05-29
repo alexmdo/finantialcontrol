@@ -17,6 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import br.com.alexmdo.finantialcontrol.account.exception.AccountNotArchivedException;
+import br.com.alexmdo.finantialcontrol.account.exception.AccountNotFoundException;
+
 class AccountServiceTest {
 
     @Mock
@@ -87,7 +90,7 @@ class AccountServiceTest {
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(nonArchivedAccount));
 
         // Act and Assert
-        assertThrows(IllegalArgumentException.class, () -> accountService.deleteAccount(accountId));
+        assertThrows(AccountNotArchivedException.class, () -> accountService.deleteAccount(accountId));
         verify(accountRepository, times(0)).delete(any());
     }
 
@@ -114,7 +117,7 @@ class AccountServiceTest {
         when(accountRepository.findById(nonExistingAccountId)).thenReturn(Optional.empty());
 
         // Act and Assert
-        assertThrows(IllegalArgumentException.class, () -> accountService.getAccountById(nonExistingAccountId));
+        assertThrows(AccountNotFoundException.class, () -> accountService.getAccountById(nonExistingAccountId));
     }
 
     // ... write additional test cases for other methods

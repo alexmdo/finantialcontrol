@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import br.com.alexmdo.finantialcontrol.account.exception.AccountNotArchivedException;
+import br.com.alexmdo.finantialcontrol.account.exception.AccountNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,13 +29,13 @@ public class AccountService {
         if (account.isArchived()) {
             accountRepository.delete(account);
         } else {
-            throw new IllegalArgumentException("Cannot delete account. Archive it first.");
+            throw new AccountNotArchivedException("Cannot delete account. Archive it first.");
         }
     }
 
     public Account getAccountById(Long id) {
         return accountRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + id));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found with id: " + id));
     }
 
     public Account archiveAccount(Long id) {

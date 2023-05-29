@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import br.com.alexmdo.finantialcontrol.account.dto.AccountCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.account.dto.AccountDto;
 import br.com.alexmdo.finantialcontrol.account.dto.AccountUpdateRequestDto;
+import br.com.alexmdo.finantialcontrol.user.User;
 import br.com.alexmdo.finantialcontrol.user.dto.UserDto;
 
 @Component
@@ -34,7 +35,7 @@ public class AccountMapper {
                 createRequestDto.color(),
                 createRequestDto.icon(),
                 false, // Default value for isArchived
-                null // User will be set separately
+                new User(createRequestDto.userId(), null, null, null) // User will be set separately
         );
     }
 

@@ -3,6 +3,8 @@ package br.com.alexmdo.finantialcontrol.infra;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.security.auth.login.AccountNotFoundException;
+
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import br.com.alexmdo.finantialcontrol.account.exception.AccountNotArchivedException;
 import br.com.alexmdo.finantialcontrol.category.exception.CategoryNotFoundException;
 import br.com.alexmdo.finantialcontrol.user.exception.UserAlreadyRegisteredException;
 import br.com.alexmdo.finantialcontrol.user.exception.UserNotFoundException;
@@ -31,7 +34,7 @@ public class CustomErrorAdvice {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
-    @ExceptionHandler({ NotFoundException.class, UserNotFoundException.class, CategoryNotFoundException.class })
+    @ExceptionHandler({ NotFoundException.class, UserNotFoundException.class, CategoryNotFoundException.class, AccountNotFoundException.class })
     public ResponseEntity<ErrorResponse> handleNotFoundException(Exception ex, HttpServletRequest request) {
         log.error("Not found error", ex);
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(),
@@ -39,7 +42,7 @@ public class CustomErrorAdvice {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    @ExceptionHandler({ UserAlreadyRegisteredException.class })
+    @ExceptionHandler({ UserAlreadyRegisteredException.class, AccountNotArchivedException.class })
     public ResponseEntity<ErrorResponse> handleBusinessException(Exception ex, HttpServletRequest request) {
         log.error("Precondition error", ex);
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.PRECONDITION_FAILED.value(),
