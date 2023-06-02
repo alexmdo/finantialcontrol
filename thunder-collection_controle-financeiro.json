@@ -1,7 +1,7 @@
 {
     "client": "Thunder Client",
     "collectionName": "controle-financeiro",
-    "dateExported": "2023-05-29T01:38:02.280Z",
+    "dateExported": "2023-06-02T21:19:23.936Z",
     "version": "1.1",
     "folders": [
         {
@@ -36,13 +36,17 @@
             "method": "POST",
             "sortNum": 10000,
             "created": "2023-05-21T02:44:58.066Z",
-            "modified": "2023-05-21T18:43:12.702Z",
+            "modified": "2023-06-02T12:57:43.611Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
                 "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@another.com\"\n}",
                 "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
             },
             "tests": [
                 {
@@ -62,13 +66,17 @@
             "method": "POST",
             "sortNum": 10000,
             "created": "2023-05-21T19:16:25.367Z",
-            "modified": "2023-05-21T19:39:12.587Z",
+            "modified": "2023-06-02T12:58:04.095Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
                 "raw": "{\n  \"name\": \"Food\",\n  \"color\": \"red\",\n  \"icon\": \"utensils\",\n  \"type\": \"EXPENSE\",\n  \"userId\": -1\n}\n",
                 "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
             },
             "tests": [
                 {
@@ -88,13 +96,17 @@
             "method": "POST",
             "sortNum": 10000,
             "created": "2023-05-29T01:19:13.750Z",
-            "modified": "2023-05-29T01:30:47.851Z",
+            "modified": "2023-06-02T12:58:27.764Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
                 "raw": "{\n  \"initialAmount\": 1000,\n  \"financialInstitution\": \"Bank\",\n  \"description\": \"Savings Account\",\n  \"accountType\": \"SAVING_ACCOUNT\",\n  \"color\": \"blue\",\n  \"icon\": \"piggy-bank\",\n  \"userId\": \"{{user_id}}\"\n}",
                 "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
             },
             "tests": [
                 {
@@ -114,9 +126,13 @@
             "method": "GET",
             "sortNum": 20000,
             "created": "2023-05-21T13:50:57.334Z",
-            "modified": "2023-05-21T13:51:03.898Z",
+            "modified": "2023-06-02T12:57:13.366Z",
             "headers": [],
             "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
+            },
             "tests": []
         },
         {
@@ -128,9 +144,13 @@
             "method": "GET",
             "sortNum": 20000,
             "created": "2023-05-21T19:16:25.368Z",
-            "modified": "2023-05-21T19:31:54.567Z",
+            "modified": "2023-06-02T12:58:07.597Z",
             "headers": [],
             "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
+            },
             "tests": []
         },
         {
@@ -142,9 +162,13 @@
             "method": "GET",
             "sortNum": 20000,
             "created": "2023-05-29T01:19:13.751Z",
-            "modified": "2023-05-29T01:20:22.408Z",
+            "modified": "2023-06-02T12:58:31.097Z",
             "headers": [],
             "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
+            },
             "tests": []
         },
         {
@@ -156,9 +180,13 @@
             "method": "GET",
             "sortNum": 30000,
             "created": "2023-05-21T14:53:02.402Z",
-            "modified": "2023-05-21T15:48:25.286Z",
+            "modified": "2023-06-02T12:57:47.658Z",
             "headers": [],
             "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
+            },
             "tests": []
         },
         {
@@ -170,9 +198,13 @@
             "method": "GET",
             "sortNum": 30000,
             "created": "2023-05-21T19:16:25.369Z",
-            "modified": "2023-05-21T19:19:40.492Z",
+            "modified": "2023-06-02T12:58:11.085Z",
             "headers": [],
             "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
+            },
             "tests": []
         },
         {
@@ -184,9 +216,13 @@
             "method": "GET",
             "sortNum": 30000,
             "created": "2023-05-29T01:19:13.752Z",
-            "modified": "2023-05-29T01:20:25.348Z",
+            "modified": "2023-06-02T12:58:34.858Z",
             "headers": [],
             "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
+            },
             "tests": []
         },
         {
@@ -198,9 +234,13 @@
             "method": "DELETE",
             "sortNum": 40000,
             "created": "2023-05-21T15:44:39.172Z",
-            "modified": "2023-05-21T15:48:29.696Z",
+            "modified": "2023-06-02T12:57:51.406Z",
             "headers": [],
             "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
+            },
             "tests": []
         },
         {
@@ -212,9 +252,13 @@
             "method": "DELETE",
             "sortNum": 40000,
             "created": "2023-05-21T19:16:25.370Z",
-            "modified": "2023-05-21T19:38:52.396Z",
+            "modified": "2023-06-02T12:58:14.351Z",
             "headers": [],
             "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
+            },
             "tests": []
         },
         {
@@ -226,9 +270,13 @@
             "method": "DELETE",
             "sortNum": 40000,
             "created": "2023-05-29T01:19:13.753Z",
-            "modified": "2023-05-29T01:20:27.966Z",
+            "modified": "2023-06-02T12:58:38.875Z",
             "headers": [],
             "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
+            },
             "tests": []
         },
         {
@@ -240,13 +288,17 @@
             "method": "PUT",
             "sortNum": 50000,
             "created": "2023-05-21T15:45:40.030Z",
-            "modified": "2023-05-21T15:48:33.451Z",
+            "modified": "2023-06-02T12:57:56.699Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
                 "raw": "{\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Doe\",\n  \"email\": \"maria.doe@example.com\"\n}",
                 "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
             },
             "tests": []
         },
@@ -259,13 +311,12 @@
             "method": "PUT",
             "sortNum": 50000,
             "created": "2023-05-21T19:16:25.371Z",
-            "modified": "2023-05-21T19:34:48.887Z",
+            "modified": "2023-06-02T12:58:20.148Z",
             "headers": [],
             "params": [],
-            "body": {
-                "type": "json",
-                "raw": "{\n  \"name\": \"Salary\",\n  \"color\": \"green\",\n  \"icon\": \"money-bill\",\n  \"type\": \"INCOME\"\n}\n",
-                "form": []
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
             },
             "tests": []
         },
@@ -278,15 +329,40 @@
             "method": "PUT",
             "sortNum": 50000,
             "created": "2023-05-29T01:19:13.754Z",
-            "modified": "2023-05-29T01:29:46.968Z",
+            "modified": "2023-06-02T12:58:43.054Z",
+            "headers": [],
+            "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "{{token}}"
+            },
+            "tests": []
+        },
+        {
+            "_id": "656c32da-a39c-41d1-b6ad-a8a60ac3318a",
+            "colId": "2dd60be8-955c-4eb1-91a7-009ad6d32eb1",
+            "containerId": "",
+            "name": "login",
+            "url": "http://localhost:8080/api/auth",
+            "method": "POST",
+            "sortNum": 60000,
+            "created": "2023-06-01T00:18:57.962Z",
+            "modified": "2023-06-02T12:57:27.522Z",
             "headers": [],
             "params": [],
             "body": {
                 "type": "json",
-                "raw": "{\n  \"financialInstitution\": \"New Bank\",\n  \"description\": \"New Description\",\n  \"accountType\": \"CHECKING_ACCOUNT\",\n  \"color\": \"red\",\n  \"icon\": \"credit-card\"\n}",
+                "raw": "{\n  \"login\": \"abc@abc.com\",\n  \"password\": \"123456\"\n}",
                 "form": []
             },
-            "tests": []
+            "tests": [
+                {
+                    "type": "set-env-var",
+                    "custom": "json.token",
+                    "action": "setto",
+                    "value": "{{token}}"
+                }
+            ]
         }
     ]
 }
