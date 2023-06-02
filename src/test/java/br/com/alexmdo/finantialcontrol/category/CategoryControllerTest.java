@@ -36,7 +36,7 @@ class CategoryControllerTest {
 
     @Test
     void testCreateCategory() {
-        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe1@email.com"));
+        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe1@email.com", "123"));
         
         var createRequestDto = new CategoryCreateRequestDto(
                 "Food", "red", "utensils", Category.Type.EXPENSE, newUser.getId());
@@ -57,7 +57,7 @@ class CategoryControllerTest {
     @Test
     void testUpdateCategory() {
         // Create a category for update
-        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe2@email.com"));
+        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe2@email.com", "123"));
         var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, newUser);
         category = categoryRepository.save(category);
 
@@ -80,7 +80,7 @@ class CategoryControllerTest {
     @Test
     void testDeleteCategory() {
         // Create a category for deletion
-        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe3@email.com"));
+        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe3@email.com", "123"));
         var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, newUser);
         category = categoryRepository.save(category);
 
@@ -94,7 +94,7 @@ class CategoryControllerTest {
     @Test
     void testGetCategories() {
         // Create some categories for testing
-        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe4@email.com"));
+        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe4@email.com", "123"));
         var category1 = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, newUser);
         var category2 = new Category(null, "Salary", "green", "money-bill", Category.Type.INCOME, newUser);
         category1 = categoryRepository.save(category1);
@@ -119,7 +119,7 @@ class CategoryControllerTest {
     @Test
     void testGetCategoryById() {
         // Create a category for retrieval
-        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe5@email.com"));
+        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe5@email.com", "123"));
         var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, newUser);
         category = categoryRepository.save(category);
 

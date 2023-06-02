@@ -44,7 +44,7 @@ class AccountControllerTest {
 
     @Test
     void shouldCreateAccount() {
-        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com"));
+        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
         var createRequestDto = new AccountCreateRequestDto(
                 BigDecimal.valueOf(1000),
                 "Bank",
@@ -73,7 +73,7 @@ class AccountControllerTest {
 
     @Test
     void shouldUpdateAccount() {
-        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com"));
+        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
         var account = accountRepository.save(new Account(
                 null,
                 BigDecimal.valueOf(1000),
@@ -112,7 +112,7 @@ class AccountControllerTest {
 
     @Test
     void shouldDeleteAccount() {
-        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com"));
+        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
         var account = accountRepository.save(new Account(
                 null,
                 BigDecimal.valueOf(1000),
@@ -135,7 +135,7 @@ class AccountControllerTest {
 
     @Test
     void shouldGetAccounts() {
-        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com"));
+        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
         var account1 = accountRepository.save(new Account(
                 null,
                 BigDecimal.valueOf(1000),
@@ -194,7 +194,7 @@ class AccountControllerTest {
 
     @Test
     void shouldGetAccountById() {
-        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com"));
+        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
         var account = accountRepository.save(new Account(
                 null,
                 BigDecimal.valueOf(1000),

@@ -33,7 +33,7 @@ public class AccountMapper {
                 createRequestDto.color(),
                 createRequestDto.icon(),
                 false, // Default value for isArchived
-                new User(createRequestDto.userId(), null, null, null) // User will be set separately
+                new User(createRequestDto.userId(), null, null, null, null) // User will be set separately
         );
     }
 

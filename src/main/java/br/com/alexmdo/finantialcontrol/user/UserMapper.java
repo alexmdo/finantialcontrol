@@ -10,7 +10,7 @@ import br.com.alexmdo.finantialcontrol.user.dto.UserUpdateRequestDto;
 public class UserMapper {
 
     public User toEntity(UserCreateRequestDto createRequestDto) {
-        return new User(null, createRequestDto.firstName(), createRequestDto.lastName(), createRequestDto.email());
+        return new User(null, createRequestDto.firstName(), createRequestDto.lastName(), createRequestDto.email(), createRequestDto.password());
     }
 
     public User updateEntity(User existingUser, UserUpdateRequestDto updateRequestDto) {
@@ -18,7 +18,8 @@ public class UserMapper {
                 existingUser.getId(),
                 updateRequestDto.firstName(),
                 updateRequestDto.lastName(),
-                updateRequestDto.email()
+                updateRequestDto.email(),
+                updateRequestDto.password()
         );
     }
 

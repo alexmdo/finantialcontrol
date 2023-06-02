@@ -34,7 +34,7 @@ class CategoryServiceTest {
 
     @Test
     void testCreateCategory() {
-        var user = new User(1L, "Joe", "Doe", "johndoe@example.com");
+        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
 
         var category = new Category();
         category.setName("Food");
@@ -51,7 +51,7 @@ class CategoryServiceTest {
 
     @Test
     void testUpdateCategory() {
-        var user = new User(1L, "Joe", "Doe", "johndoe@example.com");
+        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
 
         var category = new Category();
         category.setId(1L);
@@ -83,7 +83,7 @@ class CategoryServiceTest {
         category.setId(categoryId);
         category.setName("Food");
         category.setType(Category.Type.EXPENSE);
-        category.setUser(new User(1L, "Joe", "Doe", "johndoe@example.com"));
+        category.setUser(new User(1L, "Joe", "Doe", "johndoe@example.com", "123"));
 
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
 
@@ -99,7 +99,7 @@ class CategoryServiceTest {
         var category = new Category();
         category.setName(categoryName);
         category.setType(Category.Type.EXPENSE);
-        category.setUser(new User(1L, "Joe", "Doe", "johndoe@example.com"));
+        category.setUser(new User(1L, "Joe", "Doe", "johndoe@example.com", "123"));
 
         when(categoryRepository.findByName(categoryName)).thenReturn(Optional.of(category));
 
@@ -111,7 +111,7 @@ class CategoryServiceTest {
 
     @Test
     void testGetAllCategories() {
-        var user = new User(1L, "Joe", "Doe", "johndoe@example.com");
+        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
         var categoryList = Arrays.asList(
                 new Category(1L, "Food", null, null, Category.Type.EXPENSE, user),
                 new Category(2L, "Salary", null, null, Category.Type.INCOME, user));

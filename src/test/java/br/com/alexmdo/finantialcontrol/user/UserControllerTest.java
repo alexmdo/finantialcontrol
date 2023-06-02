@@ -38,7 +38,7 @@ class UserControllerTest {
 
     @Test
     void shouldCreateUser() {
-        var createRequestDto = new UserCreateRequestDto("John", "Doe", "johndoe@example.com");
+        var createRequestDto = new UserCreateRequestDto("John", "Doe", "johndoe@example.com", "123456");
 
         given()
             .contentType(ContentType.JSON)
@@ -55,9 +55,9 @@ class UserControllerTest {
 
     @Test
     void shouldUpdateUser() {
-        var existingUser = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com"));
+        var existingUser = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
 
-        var updateRequestDto = new UserUpdateRequestDto("Jane", "Smith", "janesmith@example.com");
+        var updateRequestDto = new UserUpdateRequestDto("Jane", "Smith", "janesmith@example.com", "123456");
 
         given()
             .contentType(ContentType.JSON)
@@ -74,7 +74,7 @@ class UserControllerTest {
 
     @Test
     void shouldDeleteUser() {
-        var existingUser = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com"));
+        var existingUser = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
 
         given()
             .pathParam("id", existingUser.getId())
@@ -86,7 +86,7 @@ class UserControllerTest {
 
     @Test
     void shouldGetUserById() {
-        var existingUser = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com"));
+        var existingUser = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
 
         given()
             .pathParam("id", existingUser.getId())
@@ -103,8 +103,8 @@ class UserControllerTest {
 
     @Test
     void shouldGetAllUsers() {
-        var user1 = new User(null, "John", "Doe", "johndoe@example.com");
-        var user2 = new User(null, "Jane", "Smith", "janesmith@example.com");
+        var user1 = new User(null, "John", "Doe", "johndoe@example.com", "123456");
+        var user2 = new User(null, "Jane", "Smith", "janesmith@example.com", "123456");
         userRepository.saveAll(Arrays.asList(user1, user2));
 
         given()

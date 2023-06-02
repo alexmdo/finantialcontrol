@@ -106,8 +106,8 @@ class UserServiceTest {
     public void testUpdateUser_EmailAlreadyExists() {
         // Arrange
         var userId = 1L;
-        var user = new User(userId, "John", "Doe", "test@example.com");
-        var userToUpdate = new User(userId, "John", "Doe", "test@emailchanged.com");
+        var user = new User(userId, "John", "Doe", "test@example.com", "123456");
+        var userToUpdate = new User(userId, "John", "Doe", "test@emailchanged.com", "123456");
 
         // Mock the repository to return the user reference
         when(userRepository.getReferenceById(user.getId())).thenReturn(user);

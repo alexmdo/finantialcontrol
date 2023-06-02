@@ -26,7 +26,7 @@ public class CategoryMapper {
                 createRequestDto.color(),
                 createRequestDto.icon(),
                 createRequestDto.type(),
-                new User(createRequestDto.userId(), null, null, null));
+                new User(createRequestDto.userId(), null, null, null, null));
     }
 
     public Category updateEntity(Category existingCategory, CategoryUpdateRequestDto updateRequestDto) {
