@@ -34,17 +34,20 @@ class AccountControllerTest {
 
     @Autowired
     private UserRepository userRepository;
+    
+    private User user;
 
     @BeforeEach
     void setUp() {
         accountRepository.deleteAll();
         userRepository.deleteAll();
+        user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "$2a$10$m9FiHBdOWEgZpnzylyc8ZOHSN5Lbt9qwG7lIJxpeq4KRJwa1oF/Tq"));
         RestAssured.port = port;
     }
 
     @Test
     void shouldCreateAccount() {
-        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
         var createRequestDto = new AccountCreateRequestDto(
                 BigDecimal.valueOf(1000),
                 "Bank",
@@ -57,6 +60,7 @@ class AccountControllerTest {
 
         given()
             .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer " + token)
             .body(createRequestDto)
         .when()
             .post("/api/accounts")
@@ -73,7 +77,7 @@ class AccountControllerTest {
 
     @Test
     void shouldUpdateAccount() {
-        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
         var account = accountRepository.save(new Account(
                 null,
                 BigDecimal.valueOf(1000),
@@ -96,6 +100,7 @@ class AccountControllerTest {
 
         given()
             .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer " + token)
             .body(updateRequestDto)
         .when()
             .put("/api/accounts/{id}", account.getId())
@@ -112,7 +117,7 @@ class AccountControllerTest {
 
     @Test
     void shouldDeleteAccount() {
-        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
         var account = accountRepository.save(new Account(
                 null,
                 BigDecimal.valueOf(1000),
@@ -126,6 +131,7 @@ class AccountControllerTest {
         ));
 
         given()
+            .header("Authorization", "Bearer " + token)
             .pathParam("id", account.getId())
         .when()
             .delete("/api/accounts/{id}")
@@ -135,7 +141,7 @@ class AccountControllerTest {
 
     @Test
     void shouldGetAccounts() {
-        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
         var account1 = accountRepository.save(new Account(
                 null,
                 BigDecimal.valueOf(1000),
@@ -160,6 +166,7 @@ class AccountControllerTest {
         ));
 
         given()
+            .header("Authorization", "Bearer " + token)
         .when()
             .get("/api/accounts")
         .then()
@@ -194,7 +201,7 @@ class AccountControllerTest {
 
     @Test
     void shouldGetAccountById() {
-        var user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
         var account = accountRepository.save(new Account(
                 null,
                 BigDecimal.valueOf(1000),
@@ -208,6 +215,7 @@ class AccountControllerTest {
         ));
 
         given()
+            .header("Authorization", "Bearer " + token)
             .pathParam("id", account.getId())
         .when()
             .get("/api/accounts/{id}")

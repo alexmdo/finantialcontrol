@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 
+import br.com.alexmdo.finantialcontrol.account.TestUtil;
 import br.com.alexmdo.finantialcontrol.category.dto.CategoryCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.category.dto.CategoryUpdateRequestDto;
 import br.com.alexmdo.finantialcontrol.user.User;
@@ -28,21 +29,25 @@ class CategoryControllerTest {
     @Autowired
     private UserRepository userRepository;
 
+    private User user;
+
     @BeforeEach
     void setUp() {
         categoryRepository.deleteAll();
+        userRepository.deleteAll();
+        user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "$2a$10$m9FiHBdOWEgZpnzylyc8ZOHSN5Lbt9qwG7lIJxpeq4KRJwa1oF/Tq"));
         RestAssured.port = port;
     }
 
     @Test
     void testCreateCategory() {
-        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe1@email.com", "123"));
-        
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
         var createRequestDto = new CategoryCreateRequestDto(
-                "Food", "red", "utensils", Category.Type.EXPENSE, newUser.getId());
+                "Food", "red", "utensils", Category.Type.EXPENSE, user.getId());
 
         given()
             .contentType("application/json")
+            .header("Authorization", "Bearer " + token)
             .body(createRequestDto)
         .when()
             .post("/api/categories")
@@ -56,9 +61,9 @@ class CategoryControllerTest {
 
     @Test
     void testUpdateCategory() {
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
         // Create a category for update
-        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe2@email.com", "123"));
-        var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, newUser);
+        var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, user);
         category = categoryRepository.save(category);
 
         var updateRequestDto = new CategoryUpdateRequestDto(
@@ -66,6 +71,7 @@ class CategoryControllerTest {
 
         given()
             .contentType("application/json")
+            .header("Authorization", "Bearer " + token)
             .body(updateRequestDto)
         .when()
             .put("/api/categories/{id}", category.getId())
@@ -79,12 +85,13 @@ class CategoryControllerTest {
 
     @Test
     void testDeleteCategory() {
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
         // Create a category for deletion
-        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe3@email.com", "123"));
-        var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, newUser);
+        var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, user);
         category = categoryRepository.save(category);
 
         given()
+            .header("Authorization", "Bearer " + token)
         .when()
             .delete("/api/categories/{id}", category.getId())
         .then()
@@ -93,14 +100,15 @@ class CategoryControllerTest {
 
     @Test
     void testGetCategories() {
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
         // Create some categories for testing
-        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe4@email.com", "123"));
-        var category1 = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, newUser);
-        var category2 = new Category(null, "Salary", "green", "money-bill", Category.Type.INCOME, newUser);
+        var category1 = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, user);
+        var category2 = new Category(null, "Salary", "green", "money-bill", Category.Type.INCOME, user);
         category1 = categoryRepository.save(category1);
         category2 = categoryRepository.save(category2);
 
         given()
+            .header("Authorization", "Bearer " + token)
         .when()
             .get("/api/categories")
         .then()
@@ -118,12 +126,13 @@ class CategoryControllerTest {
 
     @Test
     void testGetCategoryById() {
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
         // Create a category for retrieval
-        var newUser = userRepository.save(new User(null, "John", "Doe", "johndoe5@email.com", "123"));
-        var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, newUser);
+        var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, user);
         category = categoryRepository.save(category);
 
         given()
+            .header("Authorization", "Bearer " + token)
         .when()
             .get("/api/categories/{id}", category.getId())
         .then()

@@ -19,14 +19,20 @@ import org.mockito.MockitoAnnotations;
 
 import br.com.alexmdo.finantialcontrol.account.exception.AccountNotArchivedException;
 import br.com.alexmdo.finantialcontrol.account.exception.AccountNotFoundException;
+import br.com.alexmdo.finantialcontrol.user.User;
+import br.com.alexmdo.finantialcontrol.user.UserService;
 
 class AccountServiceTest {
 
     @Mock
     private AccountRepository accountRepository;
 
+    @Mock
+    private UserService userService;
+    
     @InjectMocks
     private AccountService accountService;
+
 
     @BeforeEach
     void setUp() {
@@ -36,8 +42,11 @@ class AccountServiceTest {
     @Test
     void createAccount_ValidInput_ReturnsCreatedAccount() {
         // Arrange
-        Account account = new Account();
+        var account = new Account();
+        var user = new User(1L, "John", "Doe", "john@doe.com", "123456");
+        account.setUser(user);
         when(accountRepository.save(account)).thenReturn(account);
+        when(userService.getUserById(1L)).thenReturn(user);
 
         // Act
         Account createdAccount = accountService.createAccount(account);
