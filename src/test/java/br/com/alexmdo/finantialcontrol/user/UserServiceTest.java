@@ -19,9 +19,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
 
 import br.com.alexmdo.finantialcontrol.user.exception.UserAlreadyRegisteredException;
 
+@ActiveProfiles("test")
 class UserServiceTest {
 
     @Mock

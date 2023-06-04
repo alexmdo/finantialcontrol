@@ -14,16 +14,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 
 import br.com.alexmdo.finantialcontrol.account.dto.AccountCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.account.dto.AccountUpdateRequestDto;
 import br.com.alexmdo.finantialcontrol.user.User;
 import br.com.alexmdo.finantialcontrol.user.UserRepository;
+import br.com.alexmdo.finantialcontrol.util.TestUtil;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class AccountControllerTest {
 
     @LocalServerPort

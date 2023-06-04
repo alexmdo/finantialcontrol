@@ -16,12 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.context.ActiveProfiles;
 
 import br.com.alexmdo.finantialcontrol.account.exception.AccountNotArchivedException;
 import br.com.alexmdo.finantialcontrol.account.exception.AccountNotFoundException;
 import br.com.alexmdo.finantialcontrol.user.User;
 import br.com.alexmdo.finantialcontrol.user.UserService;
 
+@ActiveProfiles("test")
 class AccountServiceTest {
 
     @Mock

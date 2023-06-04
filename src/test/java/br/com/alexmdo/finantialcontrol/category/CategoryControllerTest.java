@@ -9,15 +9,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ActiveProfiles;
 
-import br.com.alexmdo.finantialcontrol.account.TestUtil;
 import br.com.alexmdo.finantialcontrol.category.dto.CategoryCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.category.dto.CategoryUpdateRequestDto;
 import br.com.alexmdo.finantialcontrol.user.User;
 import br.com.alexmdo.finantialcontrol.user.UserRepository;
+import br.com.alexmdo.finantialcontrol.util.TestUtil;
 import io.restassured.RestAssured;
     
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class CategoryControllerTest {
 
     @LocalServerPort

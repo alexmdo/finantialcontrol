@@ -1,4 +1,4 @@
-package br.com.alexmdo.finantialcontrol.account;
+package br.com.alexmdo.finantialcontrol.util;
 
 import static io.restassured.RestAssured.given;
 
