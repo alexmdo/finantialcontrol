@@ -71,27 +71,27 @@ class CategoryServiceTest {
 
     @Test
     void testDeleteCategory() {
-        var categoryId = 1L;
+        var user = new User(1L, "Joe", "Doe", "joe@doe.com", "123");
+        var category = new Category(1L, "Food", "red", "food-icon", Category.Type.EXPENSE, user);
+        
+        when(categoryRepository.findByIdAndUser(category.getId(), user)).thenReturn(Optional.of(category));
 
-        categoryService.deleteCategory(categoryId);
+        categoryService.deleteCategoryByUser(category.getId(), user);
 
-        verify(categoryRepository, times(1)).deleteById(categoryId);
+        verify(categoryRepository, times(1)).delete(category);
+        verify(categoryRepository, times(1)).findByIdAndUser(category.getId(), user);
     }
 
     @Test
     void testGetCategoryById() {
-        var categoryId = 1L;
-        var category = new Category();
-        category.setId(categoryId);
-        category.setName("Food");
-        category.setType(Category.Type.EXPENSE);
-        category.setUser(new User(1L, "Joe", "Doe", "johndoe@example.com", "123"));
+        var user = new User(1L, "Joe", "Doe", "joe@doe.com", "123");
+        var category = new Category(1L, "Food", "red", "food-icon", Category.Type.EXPENSE, user);
+        
+        when(categoryRepository.findByIdAndUser(category.getId(), user)).thenReturn(Optional.of(category));
 
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+        var retrievedCategory = categoryService.getCategoryByIdAndUser(category.getId(), user);
 
-        var retrievedCategory = categoryService.getCategoryById(categoryId);
-
-        verify(categoryRepository, times(1)).findById(categoryId);
+        verify(categoryRepository, times(1)).findByIdAndUser(category.getId(), user);
         assertEquals(category, retrievedCategory);
     }
 
@@ -120,11 +120,11 @@ class CategoryServiceTest {
         var pageable = mock(Pageable.class);
         var categoryPage = new PageImpl<>(categoryList, pageable, categoryList.size());
 
-        when(categoryRepository.findAll(pageable)).thenReturn(categoryPage);
+        when(categoryRepository.findAllByUser(pageable, user)).thenReturn(categoryPage);
 
-        var retrievedCategories = categoryService.getAllCategories(pageable);
+        var retrievedCategories = categoryService.getAllCategoriesByUser(pageable, user);
 
-        verify(categoryRepository, times(1)).findAll(pageable);
+        verify(categoryRepository, times(1)).findAllByUser(pageable, user);
         assertEquals(categoryPage, retrievedCategories);
     }
 }

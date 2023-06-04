@@ -29,7 +29,7 @@ public class TokenService {
     }
 
     private Instant expireAt() {
-        return LocalDateTime.now().plusMinutes(15).atZone(ZoneId.systemDefault()).toInstant();
+        return LocalDateTime.now().plusMinutes(120).atZone(ZoneId.systemDefault()).toInstant();
     }
 
     public String getSubject(String token) {

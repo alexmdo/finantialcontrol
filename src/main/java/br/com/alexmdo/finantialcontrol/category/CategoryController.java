@@ -19,8 +19,8 @@ import br.com.alexmdo.finantialcontrol.category.dto.CategoryUpdateRequestDto;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/categories")
-public class CategoryController {
+@RequestMapping("/api/users/me/categories")
+public class CategoryController extends BaseController {
 
     private final CategoryService categoryService;
     private final CategoryMapper categoryMapper;
@@ -42,7 +42,7 @@ public class CategoryController {
     public ResponseEntity<CategoryDto> updateCategory(
             @PathVariable("id") Long id,
             @Valid @RequestBody CategoryUpdateRequestDto updateRequestDto) {
-        var existingCategory = categoryService.getCategoryById(id);
+        var existingCategory = categoryService.getCategoryByIdAndUser(id, super.getPrincipal());
         var updatedCategory = categoryMapper.updateEntity(existingCategory, updateRequestDto);
         var savedCategory = categoryService.updateCategory(updatedCategory);
         var responseDto = categoryMapper.toDto(savedCategory);
@@ -51,20 +51,20 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable("id") Long id) {
-        categoryService.deleteCategory(id);
+        categoryService.deleteCategoryByUser(id, super.getPrincipal());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
     public ResponseEntity<Page<CategoryDto>> getCategories(Pageable pageable) {
-        var categoryPage = categoryService.getAllCategories(pageable);
+        var categoryPage = categoryService.getAllCategoriesByUser(pageable, super.getPrincipal());
         var categoryDtoPage = categoryPage.map(categoryMapper::toDto);
         return ResponseEntity.ok(categoryDtoPage);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDto> getCategoryById(@PathVariable("id") Long id) {
-        var category = categoryService.getCategoryById(id);
+        var category = categoryService.getCategoryByIdAndUser(id, super.getPrincipal());
         var categoryDto = categoryMapper.toDto(category);
         return ResponseEntity.ok(categoryDto);
     }
