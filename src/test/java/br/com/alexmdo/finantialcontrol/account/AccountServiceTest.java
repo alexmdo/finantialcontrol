@@ -51,7 +51,7 @@ class AccountServiceTest {
         when(userService.getUserById(1L)).thenReturn(user);
 
         // Act
-        Account createdAccount = accountService.createAccount(account);
+        var createdAccount = accountService.createAccount(account);
 
         // Assert
         assertNotNull(createdAccount);
@@ -62,14 +62,14 @@ class AccountServiceTest {
     @Test
     void updateAccount_ValidInput_ReturnsUpdatedAccount() {
         // Arrange
-        Long accountId = 1L;
-        Account existingAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
+        var accountId = 1L;
+        var existingAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
                 AccountType.CHECKING_ACCOUNT, "Blue", "Icon", false, null);
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(existingAccount));
         when(accountRepository.save(existingAccount)).thenReturn(existingAccount);
 
         // Act
-        Account updatedAccount = accountService.updateAccount(existingAccount);
+        var updatedAccount = accountService.updateAccount(existingAccount);
 
         // Assert
         assertNotNull(updatedAccount);
@@ -80,13 +80,14 @@ class AccountServiceTest {
     @Test
     void deleteAccount_ArchivedAccount_DeletesAccount() {
         // Arrange
-        Long accountId = 1L;
-        Account archivedAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
-                AccountType.CHECKING_ACCOUNT, "Blue", "Icon", true, null);
-        when(accountRepository.findById(accountId)).thenReturn(Optional.of(archivedAccount));
+        var accountId = 1L;
+        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
+        var archivedAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
+                AccountType.CHECKING_ACCOUNT, "Blue", "Icon", true, user);
+        when(accountRepository.findByIdAndUser(accountId, user)).thenReturn(Optional.of(archivedAccount));
 
         // Act
-        accountService.deleteAccount(accountId);
+        accountService.deleteAccountByUser(accountId, user);
 
         // Assert
         verify(accountRepository, times(1)).delete(archivedAccount);
@@ -95,26 +96,28 @@ class AccountServiceTest {
     @Test
     void deleteAccount_NonArchivedAccount_ThrowsIllegalArgumentException() {
         // Arrange
-        Long accountId = 1L;
-        Account nonArchivedAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
+        var accountId = 1L;
+        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
+        var nonArchivedAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
                 AccountType.CHECKING_ACCOUNT, "Blue", "Icon", false, null);
-        when(accountRepository.findById(accountId)).thenReturn(Optional.of(nonArchivedAccount));
+        when(accountRepository.findByIdAndUser(accountId, user)).thenReturn(Optional.of(nonArchivedAccount));
 
         // Act and Assert
-        assertThrows(AccountNotArchivedException.class, () -> accountService.deleteAccount(accountId));
+        assertThrows(AccountNotArchivedException.class, () -> accountService.deleteAccountByUser(accountId, user));
         verify(accountRepository, times(0)).delete(any());
     }
 
     @Test
     void getAccountById_ExistingAccountId_ReturnsAccount() {
         // Arrange
-        Long accountId = 1L;
-        Account existingAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
+        var accountId = 1L;
+        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
+        var existingAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
                 AccountType.CHECKING_ACCOUNT, "Blue", "Icon", false, null);
-        when(accountRepository.findById(accountId)).thenReturn(Optional.of(existingAccount));
+        when(accountRepository.findByIdAndUser(accountId, user)).thenReturn(Optional.of(existingAccount));
 
         // Act
-        Account retrievedAccount = accountService.getAccountById(accountId);
+        var retrievedAccount = accountService.getAccountByIdAndUser(accountId, user);
 
         // Assert
         assertNotNull(retrievedAccount);
@@ -124,11 +127,12 @@ class AccountServiceTest {
     @Test
     void getAccountById_NonExistingAccountId_ThrowsIllegalArgumentException() {
         // Arrange
-        Long nonExistingAccountId = 1L;
+        var nonExistingAccountId = 1L;
+        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
         when(accountRepository.findById(nonExistingAccountId)).thenReturn(Optional.empty());
 
         // Act and Assert
-        assertThrows(AccountNotFoundException.class, () -> accountService.getAccountById(nonExistingAccountId));
+        assertThrows(AccountNotFoundException.class, () -> accountService.getAccountByIdAndUser(nonExistingAccountId, user));
     }
 
     // ... write additional test cases for other methods

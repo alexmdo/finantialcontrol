@@ -16,13 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.alexmdo.finantialcontrol.account.dto.AccountCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.account.dto.AccountDto;
 import br.com.alexmdo.finantialcontrol.account.dto.AccountUpdateRequestDto;
+import br.com.alexmdo.finantialcontrol.infra.BaseController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/accounts")
+@RequestMapping("/api/users/me/accounts")
 @RequiredArgsConstructor
-public class AccountController {
+public class AccountController extends BaseController {
 
     private final AccountService accountService;
     private final AccountMapper accountMapper;
@@ -39,7 +40,8 @@ public class AccountController {
     public ResponseEntity<AccountDto> updateAccount(
             @PathVariable("id") Long id,
             @Valid @RequestBody AccountUpdateRequestDto updateRequestDto) {
-        var existingAccount = accountService.getAccountById(id);
+        var user = super.getPrincipal();
+        var existingAccount = accountService.getAccountByIdAndUser(id, user);
         var updatedAccount = accountMapper.updateEntity(existingAccount, updateRequestDto);
         var savedAccount = accountService.updateAccount(updatedAccount);
         var accountDto = accountMapper.toDto(savedAccount);
@@ -48,21 +50,33 @@ public class AccountController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAccount(@PathVariable("id") Long id) {
-        accountService.deleteAccount(id);
+        var user = super.getPrincipal();
+        accountService.getAccountByIdAndUser(id, user);
+        accountService.deleteAccountByUser(id, user);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
     public ResponseEntity<Page<AccountDto>> getAccounts(Pageable pageable) {
-        var accountPage = accountService.getAllAccounts(pageable);
+        var user = super.getPrincipal();
+        var accountPage = accountService.getAllAccountsByUser(pageable, user);
         var accountDtoPage = accountPage.map(accountMapper::toDto);
         return ResponseEntity.ok(accountDtoPage);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<AccountDto> getAccountById(@PathVariable("id") Long id) {
-        var account = accountService.getAccountById(id);
+        var user = super.getPrincipal();
+        var account = accountService.getAccountByIdAndUser(id, user);
         var accountDto = accountMapper.toDto(account);
+        return ResponseEntity.ok(accountDto);
+    }
+
+    @PostMapping("/{id}/archive")
+    public ResponseEntity<AccountDto> archiveAccount(@PathVariable("id") Long id) {
+        var user = super.getPrincipal();
+        var archivedAccount = accountService.archiveAccount(id, user);
+        var accountDto = accountMapper.toDto(archivedAccount);
         return ResponseEntity.ok(accountDto);
     }
 

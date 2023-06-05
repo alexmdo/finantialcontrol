@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.alexmdo.finantialcontrol.category.dto.CategoryCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.category.dto.CategoryDto;
 import br.com.alexmdo.finantialcontrol.category.dto.CategoryUpdateRequestDto;
+import br.com.alexmdo.finantialcontrol.infra.BaseController;
 import jakarta.validation.Valid;
 
 @RestController

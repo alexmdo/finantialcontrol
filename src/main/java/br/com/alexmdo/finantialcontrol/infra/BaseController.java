@@ -1,4 +1,4 @@
-package br.com.alexmdo.finantialcontrol.category;
+package br.com.alexmdo.finantialcontrol.infra;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 

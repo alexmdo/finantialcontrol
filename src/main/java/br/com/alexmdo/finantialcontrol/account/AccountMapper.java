@@ -41,15 +41,19 @@ public class AccountMapper {
         if (updateRequestDto.financialInstitution() != null) {
             account.setFinancialInstitution(updateRequestDto.financialInstitution());
         }
+
         if (updateRequestDto.description() != null) {
             account.setDescription(updateRequestDto.description());
         }
+
         if (updateRequestDto.accountType() != null) {
             account.setAccountType(updateRequestDto.accountType());
         }
+
         if (updateRequestDto.color() != null) {
             account.setColor(updateRequestDto.color());
         }
+        
         if (updateRequestDto.icon() != null) {
             account.setIcon(updateRequestDto.icon());
         }
