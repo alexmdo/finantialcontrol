@@ -20,7 +20,7 @@ public class AccountService {
     private final UserService userService;
 
     public Account createAccount(Account account) {
-        var userFound = userService.getUserById(account.getUser().getId());
+        var userFound = userService.getUserByIdAndUser(account.getUser().getId());
         account.setUser(userFound);
         return accountRepository.save(account);
     }

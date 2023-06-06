@@ -48,7 +48,7 @@ class AccountServiceTest {
         var user = new User(1L, "John", "Doe", "john@doe.com", "123456");
         account.setUser(user);
         when(accountRepository.save(account)).thenReturn(account);
-        when(userService.getUserById(1L)).thenReturn(user);
+        when(userService.getUserByIdAndUser(1L)).thenReturn(user);
 
         // Act
         var createdAccount = accountService.createAccount(account);

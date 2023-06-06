@@ -130,8 +130,9 @@ class UserServiceTest {
     @Test
     void testDeleteUser() {
         var userId = 1L;
+        var user = new User(userId, "John", "Doe", "john@doe.com", "123456");
 
-        userService.deleteUser(userId);
+        userService.deleteUser(userId, user);
 
         verify(userRepository, times(1)).deleteById(userId);
     }
@@ -139,15 +140,11 @@ class UserServiceTest {
     @Test
     void testGetUserById() {
         var userId = 1L;
-        var user = new User();
-        user.setId(userId);
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail("johndoe@example.com");
+        var user = new User(userId, "John", "Doe", "john@doe.com", "123456");
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        var retrievedUser = userService.getUserById(userId);
+        var retrievedUser = userService.getUserByIdAndUser(userId, user);
 
         verify(userRepository, times(1)).findById(userId);
         assertEquals(user, retrievedUser);

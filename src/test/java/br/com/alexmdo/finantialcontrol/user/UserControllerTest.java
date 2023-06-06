@@ -2,9 +2,6 @@ package br.com.alexmdo.finantialcontrol.user;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItems;
-
-import java.util.Arrays;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +49,7 @@ class UserControllerTest {
             .header("Authorization", "Bearer " + token)
             .body(createRequestDto)
         .when()
-            .post("/api/users")
+            .post("/api/users/me")
         .then()
             .statusCode(HttpStatus.CREATED.value())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -64,8 +61,6 @@ class UserControllerTest {
     @Test
     void shouldUpdateUser() {
         var token = TestUtil.authenticate("admin@example.com", "123456");
-        var existingUser = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
-
         var updateRequestDto = new UserUpdateRequestDto("Jane", "Smith", "janesmith@example.com", "123456");
 
         given()
@@ -73,7 +68,7 @@ class UserControllerTest {
             .header("Authorization", "Bearer " + token)
             .body(updateRequestDto)
         .when()
-            .put("/api/users/{id}", existingUser.getId())
+            .put("/api/users/me/{id}", user.getId())
         .then()
             .statusCode(HttpStatus.OK.value())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -85,13 +80,12 @@ class UserControllerTest {
     @Test
     void shouldDeleteUser() {
         var token = TestUtil.authenticate("admin@example.com", "123456");
-        var existingUser = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
 
         given()
             .header("Authorization", "Bearer " + token)
-            .pathParam("id", existingUser.getId())
+            .pathParam("id", user.getId())
         .when()
-            .delete("/api/users/{id}")
+            .delete("/api/users/me/{id}")
         .then()
             .statusCode(HttpStatus.NO_CONTENT.value());
     }
@@ -99,40 +93,19 @@ class UserControllerTest {
     @Test
     void shouldGetUserById() {
         var token = TestUtil.authenticate("admin@example.com", "123456");
-        var existingUser = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "123456"));
 
         given()
             .header("Authorization", "Bearer " + token)    
-            .pathParam("id", existingUser.getId())
+            .pathParam("id", user.getId())
         .when()
-            .get("/api/users/{id}")
+            .get("/api/users/me/{id}")
         .then()
             .statusCode(HttpStatus.OK.value())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body("id", equalTo(existingUser.getId().intValue()))
-            .body("firstName", equalTo(existingUser.getFirstName()))
-            .body("lastName", equalTo(existingUser.getLastName()))
-            .body("email", equalTo(existingUser.getEmail()));
-    }
-
-    @Test
-    void shouldGetAllUsers() {
-        var token = TestUtil.authenticate("admin@example.com", "123456");
-        var user1 = new User(null, "John", "Doe", "johndoe@example.com", "123456");
-        var user2 = new User(null, "Jane", "Smith", "janesmith@example.com", "123456");
-        userRepository.saveAll(Arrays.asList(user1, user2));
-
-        given()
-            .header("Authorization", "Bearer " + token)    
-        .when()
-            .get("/api/users")
-        .then()
-            .statusCode(HttpStatus.OK.value())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body("content.size()", equalTo(3))
-            .body("content.firstName", hasItems("John", "Jane"))
-            .body("content.lastName", hasItems("Doe", "Smith"))
-            .body("content.email", hasItems("johndoe@example.com", "janesmith@example.com"));
+            .body("id", equalTo(user.getId().intValue()))
+            .body("firstName", equalTo(user.getFirstName()))
+            .body("lastName", equalTo(user.getLastName()))
+            .body("email", equalTo(user.getEmail()));
     }
 
 }

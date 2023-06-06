@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.alexmdo.finantialcontrol.infra.BaseController;
 import br.com.alexmdo.finantialcontrol.user.dto.UserCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.user.dto.UserDto;
 import br.com.alexmdo.finantialcontrol.user.dto.UserUpdateRequestDto;
@@ -20,9 +21,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/users/me")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController extends BaseController {
 
     private final UserService userService;
     private final UserMapper userMapper;
@@ -39,7 +40,8 @@ public class UserController {
     public ResponseEntity<UserDto> updateUser(
             @PathVariable("id") Long id,
             @Valid @RequestBody UserUpdateRequestDto updateRequestDto) {
-        var existingUser = userService.getUserById(id);
+        var user = super.getPrincipal();
+        var existingUser = userService.getUserByIdAndUser(id, user);
         var updatedUser = userMapper.updateEntity(existingUser, updateRequestDto);
         var savedUser = userService.updateUser(updatedUser);
         var responseDto = userMapper.toDto(savedUser);
@@ -48,20 +50,15 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) {
-        userService.deleteUser(id);
+        var user = super.getPrincipal();
+        userService.deleteUser(id, user);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping
-    public ResponseEntity<Page<UserDto>> getUsers(Pageable pageable) {
-        var userPage = userService.getAllUsers(pageable);
-        var responsePage = userPage.map(userMapper::toDto);
-        return ResponseEntity.ok(responsePage);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable("id") Long id) {
-        var user = userService.getUserById(id);
+        var principal = super.getPrincipal();
+        var user = userService.getUserByIdAndUser(id, principal);
         var responseDto = userMapper.toDto(user);
         return ResponseEntity.ok(responseDto);
     }

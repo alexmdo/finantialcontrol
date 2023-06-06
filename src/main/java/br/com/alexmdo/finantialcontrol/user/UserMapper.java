@@ -14,13 +14,23 @@ public class UserMapper {
     }
 
     public User updateEntity(User existingUser, UserUpdateRequestDto updateRequestDto) {
-        return new User(
-                existingUser.getId(),
-                updateRequestDto.firstName(),
-                updateRequestDto.lastName(),
-                updateRequestDto.email(),
-                updateRequestDto.password()
-        );
+        if (updateRequestDto.firstName() != null) {
+            existingUser.setFirstName(updateRequestDto.firstName());
+        }
+
+        if (updateRequestDto.lastName() != null) {
+            existingUser.setLastName(updateRequestDto.lastName());
+        }
+
+        if (updateRequestDto.email() != null) {
+            existingUser.setEmail(updateRequestDto.email());
+        }
+
+        if (updateRequestDto.password() != null) {
+            existingUser.setPassword(updateRequestDto.password());
+        }
+
+        return existingUser;
     }
 
     public UserDto toDto(User user) {
