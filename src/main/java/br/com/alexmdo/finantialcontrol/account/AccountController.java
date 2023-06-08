@@ -17,12 +17,14 @@ import br.com.alexmdo.finantialcontrol.account.dto.AccountCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.account.dto.AccountDto;
 import br.com.alexmdo.finantialcontrol.account.dto.AccountUpdateRequestDto;
 import br.com.alexmdo.finantialcontrol.infra.BaseController;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/users/me/accounts")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearer-key")
 public class AccountController extends BaseController {
 
     private final AccountService accountService;

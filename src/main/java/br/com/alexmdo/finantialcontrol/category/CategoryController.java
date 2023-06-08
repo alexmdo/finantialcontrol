@@ -17,10 +17,12 @@ import br.com.alexmdo.finantialcontrol.category.dto.CategoryCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.category.dto.CategoryDto;
 import br.com.alexmdo.finantialcontrol.category.dto.CategoryUpdateRequestDto;
 import br.com.alexmdo.finantialcontrol.infra.BaseController;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users/me/categories")
+@SecurityRequirement(name = "bearer-key")
 public class CategoryController extends BaseController {
 
     private final CategoryService categoryService;

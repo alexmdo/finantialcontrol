@@ -1,7 +1,5 @@
 package br.com.alexmdo.finantialcontrol.user;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,12 +15,14 @@ import br.com.alexmdo.finantialcontrol.infra.BaseController;
 import br.com.alexmdo.finantialcontrol.user.dto.UserCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.user.dto.UserDto;
 import br.com.alexmdo.finantialcontrol.user.dto.UserUpdateRequestDto;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/users/me")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearer-key")
 public class UserController extends BaseController {
 
     private final UserService userService;
