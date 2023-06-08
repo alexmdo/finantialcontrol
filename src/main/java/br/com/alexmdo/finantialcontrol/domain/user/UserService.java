@@ -3,6 +3,7 @@ package br.com.alexmdo.finantialcontrol.domain.user;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.alexmdo.finantialcontrol.domain.user.exception.UserAlreadyRegisteredException;
 import br.com.alexmdo.finantialcontrol.domain.user.exception.UserNotFoundException;
@@ -14,6 +15,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    @Transactional
     public User createUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new UserAlreadyRegisteredException("Email already exists");
@@ -22,6 +24,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     public User updateUser(User user) {
         var userFound = userRepository.getReferenceById(user.getId());
 
@@ -34,6 +37,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     public void deleteUser(Long id, User user) {
         if (id != user.getId()) {
             throw new UserNotFoundException("User not found given the id");

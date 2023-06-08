@@ -77,7 +77,7 @@ public class AccountController extends BaseController {
     @PostMapping("/{id}/archive")
     public ResponseEntity<AccountDto> archiveAccount(@PathVariable("id") Long id) {
         var user = super.getPrincipal();
-        var archivedAccount = accountService.archiveAccount(id, user);
+        var archivedAccount = accountService.archiveAccountForUser(id, user);
         var accountDto = accountMapper.toDto(archivedAccount);
         return ResponseEntity.ok(accountDto);
     }
