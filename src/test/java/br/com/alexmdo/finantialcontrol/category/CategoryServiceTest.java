@@ -18,7 +18,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
-import br.com.alexmdo.finantialcontrol.user.User;
+import br.com.alexmdo.finantialcontrol.domain.category.Category;
+import br.com.alexmdo.finantialcontrol.domain.category.CategoryRepository;
+import br.com.alexmdo.finantialcontrol.domain.category.CategoryService;
+import br.com.alexmdo.finantialcontrol.domain.user.User;
 
 @ActiveProfiles("test")
 class CategoryServiceTest {

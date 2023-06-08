@@ -18,10 +18,14 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.ActiveProfiles;
 
-import br.com.alexmdo.finantialcontrol.account.exception.AccountNotArchivedException;
-import br.com.alexmdo.finantialcontrol.account.exception.AccountNotFoundException;
-import br.com.alexmdo.finantialcontrol.user.User;
-import br.com.alexmdo.finantialcontrol.user.UserService;
+import br.com.alexmdo.finantialcontrol.domain.account.Account;
+import br.com.alexmdo.finantialcontrol.domain.account.AccountRepository;
+import br.com.alexmdo.finantialcontrol.domain.account.AccountService;
+import br.com.alexmdo.finantialcontrol.domain.account.AccountType;
+import br.com.alexmdo.finantialcontrol.domain.account.exception.AccountNotArchivedException;
+import br.com.alexmdo.finantialcontrol.domain.account.exception.AccountNotFoundException;
+import br.com.alexmdo.finantialcontrol.domain.user.User;
+import br.com.alexmdo.finantialcontrol.domain.user.UserService;
 
 @ActiveProfiles("test")
 class AccountServiceTest {
@@ -48,7 +52,7 @@ class AccountServiceTest {
         var user = new User(1L, "John", "Doe", "john@doe.com", "123456");
         account.setUser(user);
         when(accountRepository.save(account)).thenReturn(account);
-        when(userService.getUserByIdAndUser(1L)).thenReturn(user);
+        when(userService.getUserByIdAndUser(1L, user)).thenReturn(user);
 
         // Act
         var createdAccount = accountService.createAccount(account);

@@ -2,7 +2,7 @@ package br.com.alexmdo.finantialcontrol.util;
 
 import static io.restassured.RestAssured.given;
 
-import br.com.alexmdo.finantialcontrol.auth.dto.TokenJWTDto;
+import br.com.alexmdo.finantialcontrol.domain.auth.dto.TokenJWTDto;
 import io.restassured.http.ContentType;
 
 public class TestUtil {

@@ -13,10 +13,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import br.com.alexmdo.finantialcontrol.account.exception.AccountNotArchivedException;
-import br.com.alexmdo.finantialcontrol.category.exception.CategoryNotFoundException;
-import br.com.alexmdo.finantialcontrol.user.exception.UserAlreadyRegisteredException;
-import br.com.alexmdo.finantialcontrol.user.exception.UserNotFoundException;
+import br.com.alexmdo.finantialcontrol.domain.account.exception.AccountNotArchivedException;
+import br.com.alexmdo.finantialcontrol.domain.category.exception.CategoryNotFoundException;
+import br.com.alexmdo.finantialcontrol.domain.user.exception.UserAlreadyRegisteredException;
+import br.com.alexmdo.finantialcontrol.domain.user.exception.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;

@@ -11,10 +11,12 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
-import br.com.alexmdo.finantialcontrol.category.dto.CategoryCreateRequestDto;
-import br.com.alexmdo.finantialcontrol.category.dto.CategoryUpdateRequestDto;
-import br.com.alexmdo.finantialcontrol.user.User;
-import br.com.alexmdo.finantialcontrol.user.UserRepository;
+import br.com.alexmdo.finantialcontrol.domain.category.Category;
+import br.com.alexmdo.finantialcontrol.domain.category.CategoryRepository;
+import br.com.alexmdo.finantialcontrol.domain.category.dto.CategoryCreateRequestDto;
+import br.com.alexmdo.finantialcontrol.domain.category.dto.CategoryUpdateRequestDto;
+import br.com.alexmdo.finantialcontrol.domain.user.User;
+import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
 import br.com.alexmdo.finantialcontrol.util.TestUtil;
 import io.restassured.RestAssured;
     

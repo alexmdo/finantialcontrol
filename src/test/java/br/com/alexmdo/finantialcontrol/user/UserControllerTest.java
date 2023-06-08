@@ -13,8 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 
-import br.com.alexmdo.finantialcontrol.user.dto.UserCreateRequestDto;
-import br.com.alexmdo.finantialcontrol.user.dto.UserUpdateRequestDto;
+import br.com.alexmdo.finantialcontrol.domain.user.User;
+import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
+import br.com.alexmdo.finantialcontrol.domain.user.dto.UserCreateRequestDto;
+import br.com.alexmdo.finantialcontrol.domain.user.dto.UserUpdateRequestDto;
 import br.com.alexmdo.finantialcontrol.util.TestUtil;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;

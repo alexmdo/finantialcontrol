@@ -21,7 +21,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
-import br.com.alexmdo.finantialcontrol.user.exception.UserAlreadyRegisteredException;
+import br.com.alexmdo.finantialcontrol.domain.user.User;
+import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
+import br.com.alexmdo.finantialcontrol.domain.user.UserService;
+import br.com.alexmdo.finantialcontrol.domain.user.exception.UserAlreadyRegisteredException;
 
 @ActiveProfiles("test")
 class UserServiceTest {

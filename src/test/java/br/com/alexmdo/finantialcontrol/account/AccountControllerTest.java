@@ -16,10 +16,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 
-import br.com.alexmdo.finantialcontrol.account.dto.AccountCreateRequestDto;
-import br.com.alexmdo.finantialcontrol.account.dto.AccountUpdateRequestDto;
-import br.com.alexmdo.finantialcontrol.user.User;
-import br.com.alexmdo.finantialcontrol.user.UserRepository;
+import br.com.alexmdo.finantialcontrol.domain.account.Account;
+import br.com.alexmdo.finantialcontrol.domain.account.AccountRepository;
+import br.com.alexmdo.finantialcontrol.domain.account.AccountType;
+import br.com.alexmdo.finantialcontrol.domain.account.dto.AccountCreateRequestDto;
+import br.com.alexmdo.finantialcontrol.domain.account.dto.AccountUpdateRequestDto;
+import br.com.alexmdo.finantialcontrol.domain.user.User;
+import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
 import br.com.alexmdo.finantialcontrol.util.TestUtil;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;

@@ -2,7 +2,7 @@ package br.com.alexmdo.finantialcontrol.infra;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import br.com.alexmdo.finantialcontrol.user.User;
+import br.com.alexmdo.finantialcontrol.domain.user.User;
 
 public class BaseController {
 
