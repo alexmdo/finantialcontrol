@@ -1,7 +1,13 @@
 package br.com.alexmdo.finantialcontrol.configuration;
 
-import java.io.IOException;
-
+import br.com.alexmdo.finantialcontrol.domain.auth.TokenService;
+import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,15 +23,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.filter.GenericFilterBean;
 
-import br.com.alexmdo.finantialcontrol.domain.auth.TokenService;
-import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -62,16 +62,14 @@ public class SecurityConfiguration {
 
     @Component
     @RequiredArgsConstructor
-    private static class SecurityFilter extends OncePerRequestFilter {
+    private static class SecurityFilter extends GenericFilterBean {
 
         private final TokenService tokenService;
         private final UserRepository userRepository;
 
         @Override
-        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                FilterChain filterChain)
-                throws ServletException, IOException {
-            var token = getToken(request);
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+            var token = getToken((HttpServletRequest) request);
             if (token != null) {
                 var subject = tokenService.getSubject(token);
                 var userOptional = userRepository.findByEmail(subject);
@@ -82,7 +80,7 @@ public class SecurityConfiguration {
                 }
             }
 
-            filterChain.doFilter(request, response);
+            chain.doFilter(request, response);
         }
 
         private String getToken(HttpServletRequest request) {
