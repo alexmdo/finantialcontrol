@@ -27,7 +27,8 @@ public class AccountController extends BaseController {
     @PostMapping
     public CompletableFuture<ResponseEntity<AccountDto>> createAccountAsync(@Valid @RequestBody AccountCreateRequestDto createRequestDto) {
         var account = accountMapper.toEntity(createRequestDto);
-        return accountService.createAccountAsync(account)
+        return accountService
+                .createAccountAsync(account)
                 .thenApply(createdAccount -> {
                     var accountDto = accountMapper.toDto(createdAccount);
                     return ResponseEntity.status(HttpStatus.CREATED).body(accountDto);
@@ -39,7 +40,8 @@ public class AccountController extends BaseController {
             @PathVariable("id") Long id,
             @Valid @RequestBody AccountUpdateRequestDto updateRequestDto) {
         var user = super.getPrincipal();
-        return accountService.getAccountByIdAndUserAsync(id, user)
+        return accountService
+                .getAccountByIdAndUserAsync(id, user)
                 .thenCompose(existingAccount -> {
                     var updatedAccount = accountMapper.updateEntity(existingAccount, updateRequestDto);
                     return accountService.updateAccountAsync(updatedAccount);
@@ -53,17 +55,19 @@ public class AccountController extends BaseController {
     @DeleteMapping("/{id}")
     public CompletableFuture<ResponseEntity<Void>> deleteAccountAsync(@PathVariable("id") Long id) {
         var user = super.getPrincipal();
-        return accountService.getAccountByIdAndUserAsync(id, user)
+        return accountService
+                .getAccountByIdAndUserAsync(id, user)
                 .thenCompose(existingAccount -> accountService.deleteAccountByUserAsync(id, user)
-                        .thenApply(__ -> ResponseEntity.noContent().build()));
+                .thenApply(__ -> ResponseEntity.noContent().build()));
     }
 
     @GetMapping
     public CompletableFuture<ResponseEntity<Page<AccountDto>>> getAccountsAsync(Pageable pageable) {
         var user = super.getPrincipal();
-        return accountService.getAllAccountsByUserAsync(pageable, user)
-                .thenApply(accountPage -> {
-                    var accountDtoPage = accountPage.map(accountMapper::toDto);
+        return accountService
+                .getAllAccountsByUserAsync(pageable, user)
+                .thenApply(allAccounts -> {
+                    var accountDtoPage = allAccounts.map(accountMapper::toDto);
                     return ResponseEntity.ok(accountDtoPage);
                 });
     }
@@ -71,7 +75,8 @@ public class AccountController extends BaseController {
     @GetMapping("/{id}")
     public CompletableFuture<ResponseEntity<AccountDto>> getAccountByIdAsync(@PathVariable("id") Long id) {
         var user = super.getPrincipal();
-        return accountService.getAccountByIdAndUserAsync(id, user)
+        return accountService
+                .getAccountByIdAndUserAsync(id, user)
                 .thenApply(account -> {
                     var accountDto = accountMapper.toDto(account);
                     return ResponseEntity.ok(accountDto);
@@ -81,7 +86,8 @@ public class AccountController extends BaseController {
     @PostMapping("/{id}/archive")
     public CompletableFuture<ResponseEntity<AccountDto>> archiveAccountAsync(@PathVariable("id") Long id) {
         var user = super.getPrincipal();
-        return accountService.archiveAccountForUserAsync(id, user)
+        return accountService
+                .archiveAccountForUserAsync(id, user)
                 .thenApply(archivedAccount -> {
                     var accountDto = accountMapper.toDto(archivedAccount);
                     return ResponseEntity.ok(accountDto);
