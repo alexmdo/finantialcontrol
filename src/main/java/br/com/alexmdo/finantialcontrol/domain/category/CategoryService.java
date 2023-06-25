@@ -9,6 +9,8 @@ import br.com.alexmdo.finantialcontrol.domain.category.exception.CategoryNotFoun
 import br.com.alexmdo.finantialcontrol.domain.user.User;
 import lombok.RequiredArgsConstructor;
 
+import java.util.concurrent.CompletableFuture;
+
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
@@ -16,31 +18,41 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Transactional
-    public Category createCategory(Category category) {
-        return categoryRepository.save(category);
+    public CompletableFuture<Category> createCategoryAsync(Category category) {
+        return CompletableFuture.supplyAsync(() -> categoryRepository.save(category));
     }
 
     @Transactional
-    public Category updateCategory(Category category) {
-        return categoryRepository.save(category);
+    public CompletableFuture<Category> updateCategoryAsync(Category category) {
+        return CompletableFuture.supplyAsync(() -> categoryRepository.save(category));
     }
 
     @Transactional
-    public void deleteCategoryByUser(Long id, User user) {
-        var category = categoryRepository.findByIdAndUser(id, user).orElseThrow(() -> new CategoryNotFoundException("Category not found given the id"));
-        categoryRepository.delete(category);
+    public CompletableFuture<Void> deleteCategoryByUserAsync(Long id, User user) {
+        return CompletableFuture
+                .supplyAsync(() -> categoryRepository
+                        .findByIdAndUser(id, user)
+                        .orElseThrow(() -> new CategoryNotFoundException("Category not found given the id")))
+                .thenCompose(category -> {
+                    categoryRepository.delete(category);
+                    return CompletableFuture.completedFuture(null);
+                });
     }
 
-    public Category getCategoryByIdAndUser(Long id, User user) {
-        return categoryRepository.findByIdAndUser(id, user).orElseThrow(() -> new CategoryNotFoundException("Category not found given the id"));
+    public CompletableFuture<Category> getCategoryByIdAndUserAsync(Long id, User user) {
+        return CompletableFuture.supplyAsync(() -> categoryRepository
+                .findByIdAndUser(id, user)
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found given the id")));
     }
 
-    public Category getCategoryByName(String name) {
-        return categoryRepository.findByName(name).orElseThrow(() -> new CategoryNotFoundException("Category not found given the name"));
+    public CompletableFuture<Category> getCategoryByNameAsync(String name) {
+        return CompletableFuture.supplyAsync(() -> categoryRepository
+                .findByName(name)
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found given the name")));
     }
 
-    public Page<Category> getAllCategoriesByUser(Pageable pageable, User user) {
-        return categoryRepository.findAllByUser(pageable, user);
+    public CompletableFuture<Page<Category>> getAllCategoriesByUserAsync(Pageable pageable, User user) {
+        return CompletableFuture.supplyAsync(() -> categoryRepository.findAllByUser(pageable, user));
     }
 
 }

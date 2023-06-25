@@ -48,7 +48,7 @@ class CategoryServiceTest {
 
         when(categoryRepository.save(category)).thenReturn(category);
 
-        var createdCategory = categoryService.createCategory(category);
+        var createdCategory = categoryService.createCategoryAsync(category);
 
         verify(categoryRepository, times(1)).save(category);
         assertEquals(category, createdCategory);
@@ -66,7 +66,7 @@ class CategoryServiceTest {
 
         when(categoryRepository.save(category)).thenReturn(category);
 
-        var updatedCategory = categoryService.updateCategory(category);
+        var updatedCategory = categoryService.updateCategoryAsync(category);
 
         verify(categoryRepository, times(1)).save(category);
         assertEquals(category, updatedCategory);
@@ -79,7 +79,7 @@ class CategoryServiceTest {
         
         when(categoryRepository.findByIdAndUser(category.getId(), user)).thenReturn(Optional.of(category));
 
-        categoryService.deleteCategoryByUser(category.getId(), user);
+        categoryService.deleteCategoryByUserAsync(category.getId(), user);
 
         verify(categoryRepository, times(1)).delete(category);
         verify(categoryRepository, times(1)).findByIdAndUser(category.getId(), user);
@@ -92,7 +92,7 @@ class CategoryServiceTest {
         
         when(categoryRepository.findByIdAndUser(category.getId(), user)).thenReturn(Optional.of(category));
 
-        var retrievedCategory = categoryService.getCategoryByIdAndUser(category.getId(), user);
+        var retrievedCategory = categoryService.getCategoryByIdAndUserAsync(category.getId(), user);
 
         verify(categoryRepository, times(1)).findByIdAndUser(category.getId(), user);
         assertEquals(category, retrievedCategory);
@@ -108,7 +108,7 @@ class CategoryServiceTest {
 
         when(categoryRepository.findByName(categoryName)).thenReturn(Optional.of(category));
 
-        var retrievedCategory = categoryService.getCategoryByName(categoryName);
+        var retrievedCategory = categoryService.getCategoryByNameAsync(categoryName);
 
         verify(categoryRepository, times(1)).findByName(categoryName);
         assertEquals(category, retrievedCategory);
@@ -125,7 +125,7 @@ class CategoryServiceTest {
 
         when(categoryRepository.findAllByUser(pageable, user)).thenReturn(categoryPage);
 
-        var retrievedCategories = categoryService.getAllCategoriesByUser(pageable, user);
+        var retrievedCategories = categoryService.getAllCategoriesByUserAsync(pageable, user);
 
         verify(categoryRepository, times(1)).findAllByUser(pageable, user);
         assertEquals(categoryPage, retrievedCategories);

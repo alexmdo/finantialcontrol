@@ -20,6 +20,8 @@ import br.com.alexmdo.finantialcontrol.infra.BaseController;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
+import java.util.concurrent.CompletableFuture;
+
 @RestController
 @RequestMapping("/api/users/me/categories")
 @SecurityRequirement(name = "bearer-key")
@@ -34,42 +36,52 @@ public class CategoryController extends BaseController {
     }
 
     @PostMapping
-    public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryCreateRequestDto createRequestDto) {
+    public CompletableFuture<ResponseEntity<CategoryDto>> createCategoryAsync(@Valid @RequestBody CategoryCreateRequestDto createRequestDto) {
         var category = categoryMapper.toEntity(createRequestDto);
-        var createdCategory = categoryService.createCategory(category);
-        var categoryDto = categoryMapper.toDto(createdCategory);
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoryDto);
+        return categoryService.createCategoryAsync(category)
+                .thenApply(createdCategory -> {
+                    var categoryDto = categoryMapper.toDto(createdCategory);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(categoryDto);
+                });
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryDto> updateCategory(
+    public CompletableFuture<ResponseEntity<CategoryDto>> updateCategoryAsync(
             @PathVariable("id") Long id,
             @Valid @RequestBody CategoryUpdateRequestDto updateRequestDto) {
-        var existingCategory = categoryService.getCategoryByIdAndUser(id, super.getPrincipal());
-        var updatedCategory = categoryMapper.updateEntity(existingCategory, updateRequestDto);
-        var savedCategory = categoryService.updateCategory(updatedCategory);
-        var responseDto = categoryMapper.toDto(savedCategory);
-        return ResponseEntity.ok(responseDto);
+        return categoryService.getCategoryByIdAndUserAsync(id, super.getPrincipal())
+                .thenCompose(foundCategory -> {
+                    var updatedCategory = categoryMapper.updateEntity(foundCategory, updateRequestDto);
+                    return categoryService.updateCategoryAsync(updatedCategory);
+                })
+                .thenApply(updatedCategory -> {
+                    var responseDto = categoryMapper.toDto(updatedCategory);
+                    return ResponseEntity.ok(responseDto);
+                });
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable("id") Long id) {
-        categoryService.deleteCategoryByUser(id, super.getPrincipal());
-        return ResponseEntity.noContent().build();
+    public CompletableFuture<ResponseEntity<Void>> deleteCategoryAsync(@PathVariable("id") Long id) {
+        return categoryService.deleteCategoryByUserAsync(id, super.getPrincipal())
+                .thenApply(__ -> ResponseEntity.noContent().build());
     }
 
     @GetMapping
-    public ResponseEntity<Page<CategoryDto>> getCategories(Pageable pageable) {
-        var categoryPage = categoryService.getAllCategoriesByUser(pageable, super.getPrincipal());
-        var categoryDtoPage = categoryPage.map(categoryMapper::toDto);
-        return ResponseEntity.ok(categoryDtoPage);
+    public CompletableFuture<ResponseEntity<Page<CategoryDto>>> getCategoriesAsync(Pageable pageable) {
+        return categoryService.getAllCategoriesByUserAsync(pageable, super.getPrincipal())
+                .thenApply(allCategories -> {
+                    var categoryDtoPage = allCategories.map(categoryMapper::toDto);
+                    return ResponseEntity.ok(categoryDtoPage);
+                });
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryDto> getCategoryById(@PathVariable("id") Long id) {
-        var category = categoryService.getCategoryByIdAndUser(id, super.getPrincipal());
-        var categoryDto = categoryMapper.toDto(category);
-        return ResponseEntity.ok(categoryDto);
+    public CompletableFuture<ResponseEntity<CategoryDto>> getCategoryByIdAsync(@PathVariable("id") Long id) {
+        return categoryService.getCategoryByIdAndUserAsync(id, super.getPrincipal())
+                .thenApply(foundCategory -> {
+                    var categoryDto = categoryMapper.toDto(foundCategory);
+                    return ResponseEntity.ok(categoryDto);
+                });
     }
 
 }
