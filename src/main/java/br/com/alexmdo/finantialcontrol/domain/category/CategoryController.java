@@ -38,7 +38,8 @@ public class CategoryController extends BaseController {
     @PostMapping
     public CompletableFuture<ResponseEntity<CategoryDto>> createCategoryAsync(@Valid @RequestBody CategoryCreateRequestDto createRequestDto) {
         var category = categoryMapper.toEntity(createRequestDto);
-        return categoryService.createCategoryAsync(category)
+        return categoryService
+                .createCategoryAsync(category)
                 .thenApply(createdCategory -> {
                     var categoryDto = categoryMapper.toDto(createdCategory);
                     return ResponseEntity.status(HttpStatus.CREATED).body(categoryDto);
@@ -49,9 +50,10 @@ public class CategoryController extends BaseController {
     public CompletableFuture<ResponseEntity<CategoryDto>> updateCategoryAsync(
             @PathVariable("id") Long id,
             @Valid @RequestBody CategoryUpdateRequestDto updateRequestDto) {
-        return categoryService.getCategoryByIdAndUserAsync(id, super.getPrincipal())
-                .thenCompose(foundCategory -> {
-                    var updatedCategory = categoryMapper.updateEntity(foundCategory, updateRequestDto);
+        return categoryService
+                .getCategoryByIdAndUserAsync(id, super.getPrincipal())
+                .thenCompose(existingCategory -> {
+                    var updatedCategory = categoryMapper.updateEntity(existingCategory, updateRequestDto);
                     return categoryService.updateCategoryAsync(updatedCategory);
                 })
                 .thenApply(updatedCategory -> {
@@ -62,22 +64,25 @@ public class CategoryController extends BaseController {
 
     @DeleteMapping("/{id}")
     public CompletableFuture<ResponseEntity<Void>> deleteCategoryAsync(@PathVariable("id") Long id) {
-        return categoryService.deleteCategoryByUserAsync(id, super.getPrincipal())
+        return categoryService
+                .deleteCategoryByUserAsync(id, super.getPrincipal())
                 .thenApply(__ -> ResponseEntity.noContent().build());
     }
 
     @GetMapping
     public CompletableFuture<ResponseEntity<Page<CategoryDto>>> getCategoriesAsync(Pageable pageable) {
-        return categoryService.getAllCategoriesByUserAsync(pageable, super.getPrincipal())
-                .thenApply(allCategories -> {
-                    var categoryDtoPage = allCategories.map(categoryMapper::toDto);
+        return categoryService
+                .getAllCategoriesByUserAsync(pageable, super.getPrincipal())
+                .thenApply(categories -> {
+                    var categoryDtoPage = categories.map(categoryMapper::toDto);
                     return ResponseEntity.ok(categoryDtoPage);
                 });
     }
 
     @GetMapping("/{id}")
     public CompletableFuture<ResponseEntity<CategoryDto>> getCategoryByIdAsync(@PathVariable("id") Long id) {
-        return categoryService.getCategoryByIdAndUserAsync(id, super.getPrincipal())
+        return categoryService
+                .getCategoryByIdAndUserAsync(id, super.getPrincipal())
                 .thenApply(foundCategory -> {
                     var categoryDto = categoryMapper.toDto(foundCategory);
                     return ResponseEntity.ok(categoryDto);

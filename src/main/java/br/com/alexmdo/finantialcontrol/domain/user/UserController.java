@@ -25,7 +25,8 @@ public class UserController extends BaseController {
     @PostMapping
     public CompletableFuture<ResponseEntity<UserDto>> createUser(@Valid @RequestBody UserCreateRequestDto createRequestDto) {
         var user = userMapper.toEntity(createRequestDto);
-        return userService.createUser(user)
+        return userService
+                .createUserAsync(user)
                 .thenApply(createdUser -> {
                     var responseDto = userMapper.toDto(createdUser);
                     return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
@@ -36,31 +37,31 @@ public class UserController extends BaseController {
     public CompletableFuture<ResponseEntity<UserDto>> updateUser(
             @PathVariable("id") Long id,
             @Valid @RequestBody UserUpdateRequestDto updateRequestDto) {
-        var user = super.getPrincipal();
-        return userService.getUserByIdAndUser(id, user)
+        return userService
+                .getUserByIdAndUserAsync(id, super.getPrincipal())
                 .thenCompose(existingUser -> {
                     var updatedUser = userMapper.updateEntity(existingUser, updateRequestDto);
-                    return userService.updateUser(updatedUser);
+                    return userService.updateUserAsync(updatedUser);
                 })
-                .thenApply(savedUser -> {
-                    var responseDto = userMapper.toDto(savedUser);
+                .thenApply(updatedUser -> {
+                    var responseDto = userMapper.toDto(updatedUser);
                     return ResponseEntity.ok(responseDto);
                 });
     }
 
     @DeleteMapping("/{id}")
     public CompletableFuture<ResponseEntity<Void>> deleteUser(@PathVariable("id") Long id) {
-        var user = super.getPrincipal();
-        return userService.deleteUser(id, user)
-                .thenApply(ignored -> ResponseEntity.noContent().build());
+        return userService
+                .deleteUserAsync(id, super.getPrincipal())
+                .thenApply(__ -> ResponseEntity.noContent().build());
     }
 
     @GetMapping("/{id}")
     public CompletableFuture<ResponseEntity<UserDto>> getUserById(@PathVariable("id") Long id) {
-        var principal = super.getPrincipal();
-        return userService.getUserByIdAndUser(id, principal)
-                .thenApply(user -> {
-                    var responseDto = userMapper.toDto(user);
+        return userService
+                .getUserByIdAndUserAsync(id, super.getPrincipal())
+                .thenApply(existingUser -> {
+                    var responseDto = userMapper.toDto(existingUser);
                     return ResponseEntity.ok(responseDto);
                 });
     }

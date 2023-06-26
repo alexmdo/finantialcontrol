@@ -52,7 +52,7 @@ class AccountServiceTest {
         var user = new User(1L, "John", "Doe", "john@doe.com", "123456");
         account.setUser(user);
         when(accountRepository.save(account)).thenReturn(account);
-        when(userService.getUserByIdAndUser(1L, user)).thenReturn(user);
+        when(userService.getUserByIdAndUserAsync(1L, user)).thenReturn(user);
 
         // Act
         var createdAccount = accountService.createAccount(account);

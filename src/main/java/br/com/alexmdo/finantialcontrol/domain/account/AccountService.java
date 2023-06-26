@@ -10,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -23,9 +22,9 @@ public class AccountService {
     @Transactional
     public CompletableFuture<Account> createAccountAsync(Account account) {
         return userService
-                .getUserByIdAndUser(account.getUser().getId(), account.getUser())
-                .thenApply(userFound -> {
-                    account.setUser(userFound);
+                .getUserByIdAndUserAsync(account.getUser().getId(), account.getUser())
+                .thenApply(existingAccount -> {
+                    account.setUser(existingAccount);
                     return accountRepository.save(account);
                 });
     }
@@ -57,18 +56,9 @@ public class AccountService {
     @Transactional
     public CompletableFuture<Account> archiveAccountForUserAsync(Long id, User user) {
         return getAccountByIdAndUserAsync(id, user)
-                .thenCompose(account -> {
-                    account.setArchived(true);
-                    return CompletableFuture.supplyAsync(() -> accountRepository.save(account));
-                });
-    }
-
-    @Transactional
-    public CompletableFuture<Account> updateInitialAmountForUserAsync(Long id, BigDecimal amount, User user) {
-        return getAccountByIdAndUserAsync(id, user)
-                .thenCompose(account -> {
-                    account.setInitialAmount(amount);
-                    return CompletableFuture.supplyAsync(() -> accountRepository.save(account));
+                .thenCompose(existingAccount -> {
+                    existingAccount.setArchived(true);
+                    return CompletableFuture.supplyAsync(() -> accountRepository.save(existingAccount));
                 });
     }
 

@@ -53,7 +53,7 @@ class UserServiceTest {
         when(userRepository.save(user)).thenReturn(user);
 
         // Act
-        User createdUser = userService.createUser(user);
+        User createdUser = userService.createUserAsync(user);
 
         // Assert
         assertNotNull(createdUser);
@@ -73,7 +73,7 @@ class UserServiceTest {
 
         // Act & Assert
         assertThrows(UserAlreadyRegisteredException.class, () -> {
-            userService.createUser(user);
+            userService.createUserAsync(user);
         });
 
         verify(userRepository, times(1)).existsByEmail(user.getEmail());
@@ -97,7 +97,7 @@ class UserServiceTest {
         when(userRepository.save(user)).thenReturn(user);
 
         // Act
-        User updatedUser = userService.updateUser(user);
+        User updatedUser = userService.updateUserAsync(user);
 
         // Assert
         assertNotNull(updatedUser);
@@ -122,7 +122,7 @@ class UserServiceTest {
 
         // Act & Assert
         assertThrows(UserAlreadyRegisteredException.class, () -> {
-            userService.updateUser(userToUpdate);
+            userService.updateUserAsync(userToUpdate);
         });
 
         verify(userRepository, times(1)).getReferenceById(user.getId());
@@ -135,7 +135,7 @@ class UserServiceTest {
         var userId = 1L;
         var user = new User(userId, "John", "Doe", "john@doe.com", "123456");
 
-        userService.deleteUser(userId, user);
+        userService.deleteUserAsync(userId, user);
 
         verify(userRepository, times(1)).deleteById(userId);
     }
@@ -147,7 +147,7 @@ class UserServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        var retrievedUser = userService.getUserByIdAndUser(userId, user);
+        var retrievedUser = userService.getUserByIdAndUserAsync(userId, user);
 
         verify(userRepository, times(1)).findById(userId);
         assertEquals(user, retrievedUser);
@@ -163,7 +163,7 @@ class UserServiceTest {
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
-        var retrievedUser = userService.getUserByEmail(email);
+        var retrievedUser = userService.getUserByEmailAsync(email);
 
         verify(userRepository, times(1)).findByEmail(email);
         assertEquals(user, retrievedUser);
@@ -180,7 +180,7 @@ class UserServiceTest {
 
         when(userRepository.findAll(pageable)).thenReturn(userPage);
 
-        var retrievedUsers = userService.getAllUsers(pageable);
+        var retrievedUsers = userService.getAllUsersAsync(pageable);
 
         verify(userRepository, times(1)).findAll(pageable);
         assertEquals(userPage, retrievedUsers);
