@@ -1,17 +1,8 @@
 package br.com.alexmdo.finantialcontrol.user;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.Optional;
-
+import br.com.alexmdo.finantialcontrol.domain.user.User;
+import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
+import br.com.alexmdo.finantialcontrol.domain.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -21,10 +12,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
-import br.com.alexmdo.finantialcontrol.domain.user.User;
-import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
-import br.com.alexmdo.finantialcontrol.domain.user.UserService;
-import br.com.alexmdo.finantialcontrol.domain.user.exception.UserAlreadyRegisteredException;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.concurrent.CompletionException;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 class UserServiceTest {
@@ -41,7 +34,7 @@ class UserServiceTest {
     }
 
     @Test
-    public void testCreateUser_Success() {
+    void testCreateUser_Success() {
         // Arrange
         User user = new User();
         user.setEmail("test@example.com");
@@ -53,7 +46,7 @@ class UserServiceTest {
         when(userRepository.save(user)).thenReturn(user);
 
         // Act
-        User createdUser = userService.createUserAsync(user);
+        User createdUser = userService.createUserAsync(user).join();
 
         // Assert
         assertNotNull(createdUser);
@@ -62,8 +55,9 @@ class UserServiceTest {
         verify(userRepository, times(1)).save(user);
     }
 
+
     @Test
-    public void testCreateUser_EmailAlreadyExists() {
+    void testCreateUser_EmailAlreadyExists() {
         // Arrange
         User user = new User();
         user.setEmail("test@example.com");
@@ -72,16 +66,14 @@ class UserServiceTest {
         when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
 
         // Act & Assert
-        assertThrows(UserAlreadyRegisteredException.class, () -> {
-            userService.createUserAsync(user);
-        });
+        assertThrows(CompletionException.class, () -> userService.createUserAsync(user).join());
 
         verify(userRepository, times(1)).existsByEmail(user.getEmail());
         verify(userRepository, never()).save(user);
     }
 
     @Test
-    public void testUpdateUser_Success() {
+    void testUpdateUser_Success() {
         // Arrange
         User user = new User();
         user.setId(1L);
@@ -97,7 +89,7 @@ class UserServiceTest {
         when(userRepository.save(user)).thenReturn(user);
 
         // Act
-        User updatedUser = userService.updateUserAsync(user);
+        User updatedUser = userService.updateUserAsync(user).join();
 
         // Assert
         assertNotNull(updatedUser);
@@ -108,7 +100,7 @@ class UserServiceTest {
     }
 
     @Test
-    public void testUpdateUser_EmailAlreadyExists() {
+    void testUpdateUser_EmailAlreadyExists() {
         // Arrange
         var userId = 1L;
         var user = new User(userId, "John", "Doe", "test@example.com", "123456");
@@ -121,9 +113,7 @@ class UserServiceTest {
         when(userRepository.existsByEmail(userToUpdate.getEmail())).thenReturn(true);
 
         // Act & Assert
-        assertThrows(UserAlreadyRegisteredException.class, () -> {
-            userService.updateUserAsync(userToUpdate);
-        });
+        assertThrows(CompletionException.class, () -> userService.updateUserAsync(userToUpdate).join());
 
         verify(userRepository, times(1)).getReferenceById(user.getId());
         verify(userRepository, times(1)).existsByEmail(userToUpdate.getEmail());
@@ -135,7 +125,7 @@ class UserServiceTest {
         var userId = 1L;
         var user = new User(userId, "John", "Doe", "john@doe.com", "123456");
 
-        userService.deleteUserAsync(userId, user);
+        userService.deleteUserAsync(userId, user).join();
 
         verify(userRepository, times(1)).deleteById(userId);
     }
@@ -147,7 +137,7 @@ class UserServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        var retrievedUser = userService.getUserByIdAndUserAsync(userId, user);
+        var retrievedUser = userService.getUserByIdAndUserAsync(userId, user).join();
 
         verify(userRepository, times(1)).findById(userId);
         assertEquals(user, retrievedUser);
@@ -163,7 +153,7 @@ class UserServiceTest {
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
-        var retrievedUser = userService.getUserByEmailAsync(email);
+        var retrievedUser = userService.getUserByEmailAsync(email).join();
 
         verify(userRepository, times(1)).findByEmail(email);
         assertEquals(user, retrievedUser);
@@ -180,9 +170,10 @@ class UserServiceTest {
 
         when(userRepository.findAll(pageable)).thenReturn(userPage);
 
-        var retrievedUsers = userService.getAllUsersAsync(pageable);
+        var retrievedUsers = userService.getAllUsersAsync(pageable).join();
 
         verify(userRepository, times(1)).findAll(pageable);
         assertEquals(userPage, retrievedUsers);
     }
+
 }
