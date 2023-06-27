@@ -2,6 +2,10 @@ package br.com.alexmdo.finantialcontrol.domain.user;
 
 import br.com.alexmdo.finantialcontrol.domain.user.exception.UserAlreadyRegisteredException;
 import br.com.alexmdo.finantialcontrol.domain.user.exception.UserNotFoundException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,15 +15,15 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 @Service
+@RequiredArgsConstructor
+@Log4j2
 public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     @Transactional
+    @CircuitBreaker(name = "createUser", fallbackMethod = "createUserFallback")
+    @TimeLimiter(name = "createUser")
     public CompletableFuture<User> createUserAsync(User user) {
         return CompletableFuture.supplyAsync(() -> {
             if (userRepository.existsByEmail(user.getEmail())) {
@@ -31,6 +35,8 @@ public class UserService {
     }
 
     @Transactional
+    @CircuitBreaker(name = "updateUser", fallbackMethod = "updateUserFallback")
+    @TimeLimiter(name = "updateUser")
     public CompletableFuture<User> updateUserAsync(User user) {
         return CompletableFuture
                 .supplyAsync(() -> userRepository.findById(user.getId()))
@@ -51,6 +57,8 @@ public class UserService {
     }
 
     @Transactional
+    @CircuitBreaker(name = "deleteUser", fallbackMethod = "deleteUserFallback")
+    @TimeLimiter(name = "deleteUser")
     public CompletableFuture<Void> deleteUserAsync(Long id, User user) {
         return CompletableFuture.runAsync(() -> {
             if (!Objects.equals(id, user.getId())) {
@@ -61,6 +69,8 @@ public class UserService {
         });
     }
 
+    @CircuitBreaker(name = "getUserByIdAndUser", fallbackMethod = "getUserByIdAndUserFallback")
+    @TimeLimiter(name = "getUserByIdAndUser")
     public CompletableFuture<User> getUserByIdAndUserAsync(Long id, User user) {
         return CompletableFuture.supplyAsync(() -> {
             if (!Objects.equals(id, user.getId())) {
@@ -72,13 +82,54 @@ public class UserService {
         });
     }
 
+    @CircuitBreaker(name = "getUserByEmail", fallbackMethod = "getUserByEmailFallback")
+    @TimeLimiter(name = "getUserByEmail")
     public CompletableFuture<User> getUserByEmailAsync(String email) {
         return CompletableFuture.supplyAsync(() -> userRepository
                 .findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found given the email")));
     }
 
+    @CircuitBreaker(name = "getAllUsers", fallbackMethod = "getAllUsersFallback")
+    @TimeLimiter(name = "getAllUsers")
     public CompletableFuture<Page<User>> getAllUsersAsync(Pageable pageable) {
         return CompletableFuture.supplyAsync(() -> userRepository.findAll(pageable));
     }
+
+    public CompletableFuture<User> createUserFallback(User user, Throwable throwable) {
+        // Fallback logic for createUserAsync
+        log.error("Fallback triggered for createUserAsync due to: " + throwable.getMessage());
+        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+    }
+
+    public CompletableFuture<User> updateUserFallback(User user, Throwable throwable) {
+        // Fallback logic for updateUserAsync
+        log.error("Fallback triggered for updateUserAsync due to: " + throwable.getMessage());
+        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+    }
+
+    public CompletableFuture<Void> deleteUserFallback(Long id, User user, Throwable throwable) {
+        // Fallback logic for deleteUserAsync
+        log.error("Fallback triggered for deleteUserAsync due to: " + throwable.getMessage());
+        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+    }
+
+    public CompletableFuture<User> getUserByIdAndUserFallback(Long id, User user, Throwable throwable) {
+        // Fallback logic for getUserByIdAndUserAsync
+        log.error("Fallback triggered for getUserByIdAndUserAsync due to: " + throwable.getMessage());
+        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+    }
+
+    public CompletableFuture<User> getUserByEmailFallback(String email, Throwable throwable) {
+        // Fallback logic for getUserByEmailAsync
+        log.error("Fallback triggered for getUserByEmailAsync due to: " + throwable.getMessage());
+        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+    }
+
+    public CompletableFuture<Page<User>> getAllUsersFallback(Pageable pageable, Throwable throwable) {
+        // Fallback logic for getAllUsersAsync
+        log.error("Fallback triggered for getAllUsersAsync due to: " + throwable.getMessage());
+        return CompletableFuture.completedFuture(Page.empty()); // Return an empty page as fallback
+    }
+
 }
