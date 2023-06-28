@@ -1,5 +1,8 @@
 package br.com.alexmdo.finantialcontrol.domain.category;
 
+import br.com.alexmdo.finantialcontrol.domain.category.exception.CategoryAlreadyExistsException;
+import br.com.alexmdo.finantialcontrol.infra.BusinessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,7 +28,8 @@ public class CategoryService {
     @CircuitBreaker(name = "createCategory", fallbackMethod = "createCategoryFallback")
     @TimeLimiter(name = "createCategory")
     public CompletableFuture<Category> createCategoryAsync(Category category) {
-        return CompletableFuture.supplyAsync(() -> categoryRepository.save(category));
+        return CompletableFuture
+                .supplyAsync(() -> categoryRepository.save(category));
     }
 
     @Transactional
@@ -73,38 +77,76 @@ public class CategoryService {
 
     public CompletableFuture<Category> createCategoryFallback(Category category, Throwable throwable) {
         // Fallback logic for createCategoryAsync
-        log.error("Fallback triggered for createCategoryAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else if (throwable instanceof DataIntegrityViolationException) {
+            throw new CategoryAlreadyExistsException("Category with name '" + category.getName() + "' already exists.");
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for createCategoryAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
     }
 
     public CompletableFuture<Category> updateCategoryFallback(Category category, Throwable throwable) {
         // Fallback logic for updateCategoryAsync
-        log.error("Fallback triggered for updateCategoryAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for updateCategoryAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
     }
 
     public CompletableFuture<Void> deleteCategoryByUserFallback(Long id, User user, Throwable throwable) {
         // Fallback logic for deleteCategoryByUserAsync
-        log.error("Fallback triggered for deleteCategoryByUserAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for deleteCategoryByUserAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
     }
 
     public CompletableFuture<Category> getCategoryByIdAndUserFallback(Long id, User user, Throwable throwable) {
         // Fallback logic for getCategoryByIdAndUserAsync
-        log.error("Fallback triggered for getCategoryByIdAndUserAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for getCategoryByIdAndUserAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
     }
 
     public CompletableFuture<Category> getCategoryByNameFallback(String name, Throwable throwable) {
         // Fallback logic for getCategoryByNameAsync
-        log.error("Fallback triggered for getCategoryByNameAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for getCategoryByNameAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
     }
 
     public CompletableFuture<Page<Category>> getAllCategoriesByUserFallback(Pageable pageable, User user, Throwable throwable) {
         // Fallback logic for getAllCategoriesByUserAsync
-        log.error("Fallback triggered for getAllCategoriesByUserAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(Page.empty()); // Return an empty page as fallback
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for getAllCategoriesByUserAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
     }
 
 }

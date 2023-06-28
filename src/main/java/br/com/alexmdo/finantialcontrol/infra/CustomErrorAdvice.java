@@ -1,19 +1,7 @@
 package br.com.alexmdo.finantialcontrol.infra;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import javax.security.auth.login.AccountNotFoundException;
-
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import br.com.alexmdo.finantialcontrol.domain.account.exception.AccountNotArchivedException;
+import br.com.alexmdo.finantialcontrol.domain.category.exception.CategoryAlreadyExistsException;
 import br.com.alexmdo.finantialcontrol.domain.category.exception.CategoryNotFoundException;
 import br.com.alexmdo.finantialcontrol.domain.user.exception.UserAlreadyRegisteredException;
 import br.com.alexmdo.finantialcontrol.domain.user.exception.UserNotFoundException;
@@ -21,6 +9,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import javax.security.auth.login.AccountNotFoundException;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestControllerAdvice
 @Log4j2
@@ -42,7 +42,7 @@ public class CustomErrorAdvice {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    @ExceptionHandler({ UserAlreadyRegisteredException.class, AccountNotArchivedException.class })
+    @ExceptionHandler({ UserAlreadyRegisteredException.class, AccountNotArchivedException.class, CategoryAlreadyExistsException.class })
     public ResponseEntity<ErrorResponse> handleBusinessException(Exception ex, HttpServletRequest request) {
         log.error("Precondition error", ex);
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.PRECONDITION_FAILED.value(),
@@ -50,7 +50,7 @@ public class CustomErrorAdvice {
         return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(errorResponse);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<List<ValidationErrorResponse>> handleError400(MethodArgumentNotValidException e) {
         log.error("Validation error", e);
         var errors = e.getFieldErrors();

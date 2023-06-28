@@ -1,5 +1,6 @@
 package br.com.alexmdo.finantialcontrol.domain.user;
 
+import br.com.alexmdo.finantialcontrol.infra.BusinessException;
 import br.com.alexmdo.finantialcontrol.domain.user.exception.UserAlreadyRegisteredException;
 import br.com.alexmdo.finantialcontrol.domain.user.exception.UserNotFoundException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -98,38 +99,74 @@ public class UserService {
 
     public CompletableFuture<User> createUserFallback(User user, Throwable throwable) {
         // Fallback logic for createUserAsync
-        log.error("Fallback triggered for createUserAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for createUserAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     public CompletableFuture<User> updateUserFallback(User user, Throwable throwable) {
         // Fallback logic for updateUserAsync
-        log.error("Fallback triggered for updateUserAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for updateUserAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
     }
 
     public CompletableFuture<Void> deleteUserFallback(Long id, User user, Throwable throwable) {
         // Fallback logic for deleteUserAsync
-        log.error("Fallback triggered for deleteUserAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for deleteUserAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
     }
 
     public CompletableFuture<User> getUserByIdAndUserFallback(Long id, User user, Throwable throwable) {
         // Fallback logic for getUserByIdAndUserAsync
-        log.error("Fallback triggered for getUserByIdAndUserAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for getUserByIdAndUserAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
     }
 
     public CompletableFuture<User> getUserByEmailFallback(String email, Throwable throwable) {
         // Fallback logic for getUserByEmailAsync
-        log.error("Fallback triggered for getUserByEmailAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for getUserByEmailAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
     }
 
     public CompletableFuture<Page<User>> getAllUsersFallback(Pageable pageable, Throwable throwable) {
         // Fallback logic for getAllUsersAsync
-        log.error("Fallback triggered for getAllUsersAsync due to: " + throwable.getMessage());
-        return CompletableFuture.completedFuture(Page.empty()); // Return an empty page as fallback
+        if (throwable instanceof BusinessException) {
+            throw (BusinessException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for getAllUsersAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
     }
 
 }
