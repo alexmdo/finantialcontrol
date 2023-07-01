@@ -1,6 +1,7 @@
 package br.com.alexmdo.finantialcontrol.infra;
 
 import br.com.alexmdo.finantialcontrol.domain.account.exception.AccountNotArchivedException;
+import br.com.alexmdo.finantialcontrol.domain.account.exception.AccountNotFoundException;
 import br.com.alexmdo.finantialcontrol.domain.category.exception.CategoryAlreadyExistsException;
 import br.com.alexmdo.finantialcontrol.domain.category.exception.CategoryNotFoundException;
 import br.com.alexmdo.finantialcontrol.domain.user.exception.UserAlreadyRegisteredException;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 
