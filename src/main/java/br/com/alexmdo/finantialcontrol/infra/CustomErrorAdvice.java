@@ -4,6 +4,8 @@ import br.com.alexmdo.finantialcontrol.domain.account.exception.AccountNotArchiv
 import br.com.alexmdo.finantialcontrol.domain.account.exception.AccountNotFoundException;
 import br.com.alexmdo.finantialcontrol.domain.category.exception.CategoryAlreadyExistsException;
 import br.com.alexmdo.finantialcontrol.domain.category.exception.CategoryNotFoundException;
+import br.com.alexmdo.finantialcontrol.domain.creditcard.exception.CreditCardNotArchivedException;
+import br.com.alexmdo.finantialcontrol.domain.creditcard.exception.CreditCardNotFoundException;
 import br.com.alexmdo.finantialcontrol.domain.user.exception.UserAlreadyRegisteredException;
 import br.com.alexmdo.finantialcontrol.domain.user.exception.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,7 +36,7 @@ public class CustomErrorAdvice {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
-    @ExceptionHandler({ NotFoundException.class, UserNotFoundException.class, CategoryNotFoundException.class, AccountNotFoundException.class })
+    @ExceptionHandler({ NotFoundException.class, UserNotFoundException.class, CategoryNotFoundException.class, AccountNotFoundException.class, CreditCardNotFoundException.class})
     public ResponseEntity<ErrorResponse> handleNotFoundException(Exception ex, HttpServletRequest request) {
         log.error("Not found error", ex);
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(),
@@ -42,7 +44,7 @@ public class CustomErrorAdvice {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    @ExceptionHandler({ UserAlreadyRegisteredException.class, AccountNotArchivedException.class, CategoryAlreadyExistsException.class })
+    @ExceptionHandler({ UserAlreadyRegisteredException.class, AccountNotArchivedException.class, CategoryAlreadyExistsException.class, CreditCardNotArchivedException.class })
     public ResponseEntity<ErrorResponse> handleBusinessException(Exception ex, HttpServletRequest request) {
         log.error("Precondition error", ex);
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.PRECONDITION_FAILED.value(),

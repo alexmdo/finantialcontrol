@@ -8,10 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -26,13 +23,30 @@ public class CreditCardController extends BaseController {
     private final CreditCardMapper creditCardMapper;
 
     @PostMapping
-    public CompletableFuture<ResponseEntity<CreditCardDto>> createCreditCard(@Valid @RequestBody CreditCardCreateRequestDto createRequestDto) {
+    public CompletableFuture<ResponseEntity<CreditCardDto>> createCreditCardAsync(@Valid @RequestBody CreditCardCreateRequestDto createRequestDto) {
         var creditCard = creditCardMapper.toEntity(createRequestDto);
-        return creditCardService.createCreditCardAsync(creditCard, super.getPrincipal())
+        return creditCardService.createCreditCardForUserAsync(creditCard, super.getPrincipal())
                 .thenApply(createdCreditCard -> {
                     var creditCardDto = creditCardMapper.toDto(createdCreditCard);
                     return ResponseEntity.status(HttpStatus.CREATED).body(creditCardDto);
                 });
+    }
+
+    @PostMapping("/{id}/archive")
+    public CompletableFuture<ResponseEntity<CreditCardDto>> archiveCreditCardAsync(@PathVariable Long id) {
+        return creditCardService
+                .archiveCreditCardForUserAsync(id, super.getPrincipal())
+                .thenApply(archivedCreditCard -> {
+                    var creditCardDto = creditCardMapper.toDto(archivedCreditCard);
+                    return ResponseEntity.ok(creditCardDto);
+                });
+    }
+
+    @DeleteMapping("/{id}")
+    public CompletableFuture<ResponseEntity<Void>> deleteCreditCardAsync(@PathVariable Long id) {
+        return creditCardService
+                .deleteCreditCardForUserAsync(id, super.getPrincipal())
+                .thenApply(__ -> ResponseEntity.noContent().build());
     }
 
 }

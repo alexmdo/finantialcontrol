@@ -41,6 +41,8 @@ public class CreditCard {
     @Max(value = 30, message = "Due date must be less than or equal to 31")
     private Integer dueDate;
 
+    private boolean archived = false;
+
     @NotNull(message = "Account must not be null")
     @ManyToOne(fetch = FetchType.LAZY)
     private Account account;

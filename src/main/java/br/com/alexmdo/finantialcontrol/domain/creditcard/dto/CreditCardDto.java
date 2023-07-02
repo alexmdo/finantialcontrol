@@ -11,6 +11,7 @@ public record CreditCardDto(
         CreditCardBrand brand,
         Integer closingDay,
         Integer dueDate,
-        Long accountId
+        Long accountId,
+        boolean archived
 ) {
 }

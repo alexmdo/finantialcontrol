@@ -16,7 +16,8 @@ public class CreditCardMapper {
                 creditCard.getBrand(),
                 creditCard.getClosingDay(),
                 creditCard.getDueDate(),
-                creditCard.getAccount().getId()
+                creditCard.getAccount().getId(),
+                creditCard.isArchived()
         );
     }
 
@@ -30,6 +31,7 @@ public class CreditCardMapper {
                 createRequestDto.brand(),
                 createRequestDto.closingDay(),
                 createRequestDto.dueDate(),
+                false,
                 account
         );
     }
