@@ -55,5 +55,8 @@ public class Account {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
-    
+
+    public Account(Long id) {
+        this.id = id;
+    }
 }

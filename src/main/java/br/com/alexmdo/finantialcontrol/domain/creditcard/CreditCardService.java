@@ -11,7 +11,8 @@ import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +70,21 @@ public class CreditCardService {
                         .orElseThrow(() -> new CreditCardNotFoundException("Credit card not found with id '" + id + "' and user '" + user.getUsername() + "'")));
     }
 
+    @Transactional
+    @CircuitBreaker(name = "updateCreditCard", fallbackMethod = "updateCreditCardFallback")
+    @TimeLimiter(name = "updateCreditCard")
+    public CompletableFuture<CreditCard> updateCreditCardAsync(CreditCard updatedCreditCard) {
+        return CompletableFuture
+                .supplyAsync(() -> creditCardRepository.save(updatedCreditCard));
+    }
+
+    @CircuitBreaker(name = "getAllCreditCardsByUser", fallbackMethod = "getAllCreditCardsByUserFallback")
+    @TimeLimiter(name = "getAllCreditCardsByUser")
+    public CompletableFuture<Page<CreditCard>> getAllCreditCardsByUserAsync(Pageable pageable, User user) {
+        return CompletableFuture
+                .supplyAsync(() -> creditCardRepository.findAllByAccountUser(pageable, user));
+    }
+
     public CompletableFuture<Account> createCreditCardForUserFallback(CreditCard creditCard, User user, Throwable throwable) {
         // Fallback logic for createAccountAsync
         if (throwable instanceof BusinessException || throwable instanceof ConstraintViolationException) {
@@ -117,4 +133,27 @@ public class CreditCardService {
         }
     }
 
+    public CompletableFuture<CreditCard> updateCreditCardFallback(CreditCard updatedCreditCard, Throwable throwable) {
+        // Fallback logic for createAccountAsync
+        if (throwable instanceof BusinessException || throwable instanceof ConstraintViolationException) {
+            throw (RuntimeException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for updateCreditCardAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
+    }
+
+    public CompletableFuture<Page<CreditCard>> getAllCreditCardsByUserFallback(Pageable pageable, User user, Throwable throwable) {
+        // Fallback logic for createAccountAsync
+        if (throwable instanceof BusinessException) {
+            throw (RuntimeException) throwable;
+        } else {
+            // Handle other types of exceptions or fallback behavior
+            // Return a default or fallback value, or perform alternative logic
+            log.error("Fallback triggered for getAllCreditCardsByUserAsync due to: " + throwable.getMessage());
+            return CompletableFuture.completedFuture(null); // Return a default or fallback value
+        }
+    }
 }

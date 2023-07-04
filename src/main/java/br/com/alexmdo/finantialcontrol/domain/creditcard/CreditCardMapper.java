@@ -3,6 +3,7 @@ package br.com.alexmdo.finantialcontrol.domain.creditcard;
 import br.com.alexmdo.finantialcontrol.domain.account.Account;
 import br.com.alexmdo.finantialcontrol.domain.creditcard.dto.CreditCardCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.domain.creditcard.dto.CreditCardDto;
+import br.com.alexmdo.finantialcontrol.domain.creditcard.dto.CreditCardUpdateRequestDto;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,5 +35,11 @@ public class CreditCardMapper {
                 false,
                 account
         );
+    }
+
+    public CreditCard updateEntity(final CreditCard creditCard, final CreditCardUpdateRequestDto updateRequestDto) {
+        creditCard.setDescription(updateRequestDto.description());
+        creditCard.setAccount(new Account(updateRequestDto.accountId()));
+        return creditCard;
     }
 }
