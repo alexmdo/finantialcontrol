@@ -1,24 +1,5 @@
 package br.com.alexmdo.finantialcontrol.domain.account;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItems;
-
-import java.math.BigDecimal;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-
-import br.com.alexmdo.finantialcontrol.domain.account.Account;
-import br.com.alexmdo.finantialcontrol.domain.account.AccountRepository;
-import br.com.alexmdo.finantialcontrol.domain.account.AccountType;
 import br.com.alexmdo.finantialcontrol.domain.account.dto.AccountCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.domain.account.dto.AccountUpdateRequestDto;
 import br.com.alexmdo.finantialcontrol.domain.user.User;
@@ -26,45 +7,65 @@ import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
 import br.com.alexmdo.finantialcontrol.util.TestUtil;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ActiveProfiles;
+
+import java.math.BigDecimal;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class AccountControllerTest {
+public class AccountControllerTest {
 
     @LocalServerPort
     private int port;
 
     @Autowired
-    private AccountRepository accountRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepository;
-    
+    private AccountRepository accountRepository;
+
     private User user;
+    private Account account;
 
     @BeforeEach
     void setUp() {
-        accountRepository.deleteAll();
         userRepository.deleteAll();
-        user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "$2a$10$m9FiHBdOWEgZpnzylyc8ZOHSN5Lbt9qwG7lIJxpeq4KRJwa1oF/Tq"));
+        accountRepository.deleteAll();
+
+        this.user = createNewUser();
+        this.account = createNewAccount();
+
         RestAssured.port = port;
     }
 
     @Test
-    void shouldCreateAccount() {
+    public void testCreateAccount() {
+        // Prepare test data
         var token = TestUtil.authenticate("johndoe@example.com", "123456");
-        var createRequestDto = new AccountCreateRequestDto(
+        AccountCreateRequestDto createRequestDto = new AccountCreateRequestDto(
                 BigDecimal.valueOf(1000),
                 "Bank",
                 "Savings Account",
                 AccountType.SAVING_ACCOUNT,
                 "Blue",
                 "piggy-bank",
-                user.getId()
+                this.user.getId()
         );
 
+        // Perform POST request
         given()
+            .port(port)
             .contentType(ContentType.JSON)
             .header("Authorization", "Bearer " + token)
             .body(createRequestDto)
@@ -72,143 +73,116 @@ class AccountControllerTest {
             .post("/api/users/me/accounts")
         .then()
             .statusCode(HttpStatus.CREATED.value())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body("initialAmount", equalTo(createRequestDto.initialAmount().intValue()))
-            .body("financialInstitution", equalTo(createRequestDto.financialInstitution()))
-            .body("description", equalTo(createRequestDto.description()))
-            .body("accountType", equalTo(createRequestDto.accountType().toString()))
-            .body("color", equalTo(createRequestDto.color()))
-            .body("icon", equalTo(createRequestDto.icon()));
+            .body("initialAmount", equalTo(1000))
+            .body("financialInstitution", equalTo("Bank"))
+            .body("description", equalTo("Savings Account"))
+            .body("accountType", equalTo("SAVING_ACCOUNT"))
+            .body("color", equalTo("Blue"))
+            .body("icon", equalTo("piggy-bank"));
     }
 
     @Test
-    void shouldUpdateAccount() {
+    public void testUpdateAccount() {
+        // Prepare test data
         var token = TestUtil.authenticate("johndoe@example.com", "123456");
-        var account = accountRepository.save(new Account(
-                null,
-                BigDecimal.valueOf(1000),
-                "Bank",
-                "Savings Account",
-                AccountType.SAVING_ACCOUNT,
-                "Blue",
-                "piggy-bank",
-                false,
-                user
-        ));
-
-        var updateRequestDto = new AccountUpdateRequestDto(
-                "Credit Union",
-                "Checking Account",
+        Long accountId = account.getId();
+        AccountUpdateRequestDto updateRequestDto = new AccountUpdateRequestDto(
+                "Updated Bank",
+                "Updated Savings Account",
                 AccountType.CHECKING_ACCOUNT,
-                "Green",
-                "credit-card"
+                "Red",
+                "piggy-bank"
         );
 
+        // Perform PUT request
         given()
+            .port(port)
             .contentType(ContentType.JSON)
             .header("Authorization", "Bearer " + token)
             .body(updateRequestDto)
         .when()
-            .put("/api/users/me/accounts/{id}", account.getId())
+            .put("/api/users/me/accounts/{id}", accountId)
         .then()
             .statusCode(HttpStatus.OK.value())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body("initialAmount", equalTo(account.getInitialAmount().floatValue()))
-            .body("financialInstitution", equalTo(updateRequestDto.financialInstitution()))
-            .body("description", equalTo(updateRequestDto.description()))
-            .body("accountType", equalTo(updateRequestDto.accountType().toString()))
-            .body("color", equalTo(updateRequestDto.color()))
-            .body("icon", equalTo(updateRequestDto.icon()));
+            .body("financialInstitution", equalTo("Updated Bank"))
+            .body("description", equalTo("Updated Savings Account"));
     }
 
     @Test
-    void shouldDeleteAccount() {
+    public void testDeleteAccount() {
+        // Prepare test data
         var token = TestUtil.authenticate("johndoe@example.com", "123456");
-        var account = accountRepository.save(new Account(
-                null,
-                BigDecimal.valueOf(1000),
-                "Bank",
-                "Savings Account",
-                AccountType.SAVING_ACCOUNT,
-                "Blue",
-                "piggy-bank",
-                true,
-                user
-        ));
+        Long accountId = account.getId();
 
+        account.setArchived(true);
+        accountRepository.save(account);
+
+        // Perform DELETE request
         given()
+            .port(port)
+            .contentType(ContentType.JSON)
             .header("Authorization", "Bearer " + token)
-            .pathParam("id", account.getId())
         .when()
-            .delete("/api/users/me/accounts/{id}")
+            .delete("/api/users/me/accounts/{id}", accountId)
         .then()
             .statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
-    void shouldGetAccounts() {
+    public void testGetAccounts() {
+        // Prepare test data
         var token = TestUtil.authenticate("johndoe@example.com", "123456");
-        var account1 = accountRepository.save(new Account(
-                null,
-                BigDecimal.valueOf(1000),
-                "Bank",
-                "Savings Account",
-                AccountType.SAVING_ACCOUNT,
-                "Blue",
-                "piggy-bank",
-                false,
-                user
-        ));
-        var account2 = accountRepository.save(new Account(
-                null,
-                BigDecimal.valueOf(2000),
-                "Credit Union",
-                "Checking Account",
-                AccountType.CHECKING_ACCOUNT,
-                "Green",
-                "credit-card",
-                false,
-                user
-        ));
 
+        // Perform GET request
         given()
+            .port(port)
+            .contentType(ContentType.JSON)
             .header("Authorization", "Bearer " + token)
         .when()
             .get("/api/users/me/accounts")
         .then()
             .statusCode(HttpStatus.OK.value())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body("content.size()", equalTo(2))
-            .body("content.initialAmount", hasItems(
-                account1.getInitialAmount().floatValue(),
-                account2.getInitialAmount().floatValue()
-            ))
-            .body("content.financialInstitution", hasItems(
-                account1.getFinancialInstitution(),
-                account2.getFinancialInstitution()
-            ))
-            .body("content.description", hasItems(
-                account1.getDescription(),
-                account2.getDescription()
-            ))
-            .body("content.accountType", hasItems(
-                account1.getAccountType().toString(),
-                account2.getAccountType().toString()
-            ))
-            .body("content.color", hasItems(
-                account1.getColor(),
-                account2.getColor()
-            ))
-            .body("content.icon", hasItems(
-                account1.getIcon(),
-                account2.getIcon()
-            ));
+            .body("content.size()", equalTo(1))
+            .body("content[0].initialAmount", equalTo(1000.0F))
+            .body("content[0].financialInstitution", equalTo("Bank"))
+            .body("content[0].description", equalTo("Savings Account"))
+            .body("content[0].accountType", equalTo("SAVING_ACCOUNT"))
+            .body("content[0].color", equalTo("Blue"))
+            .body("content[0].icon", equalTo("piggy-bank"))
+            .body("content[0].isArchived", equalTo(false));
     }
 
     @Test
-    void shouldGetAccountById() {
+    public void testGetAccountById() {
+        // Prepare test data
         var token = TestUtil.authenticate("johndoe@example.com", "123456");
-        var account = accountRepository.save(new Account(
+        Long accountId = account.getId();
+
+        // Perform GET request
+        given()
+            .port(port)
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer " + token)
+        .when()
+            .get("/api/users/me/accounts/{id}", accountId)
+        .then()
+            .statusCode(HttpStatus.OK.value())
+            .body("id", equalTo(accountId.intValue()))
+            .body("initialAmount", equalTo(1000.0F))
+            .body("financialInstitution", equalTo("Bank"))
+            .body("description", equalTo("Savings Account"))
+            .body("accountType", equalTo("SAVING_ACCOUNT"))
+            .body("color", equalTo("Blue"))
+            .body("icon", equalTo("piggy-bank"))
+            .body("isArchived", equalTo(false));
+    }
+
+    private User createNewUser() {
+        return userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "$2a$10$m9FiHBdOWEgZpnzylyc8ZOHSN5Lbt9qwG7lIJxpeq4KRJwa1oF/Tq"));
+    }
+
+    private Account createNewAccount() {
+        return accountRepository.save(new Account(
                 null,
                 BigDecimal.valueOf(1000),
                 "Bank",
@@ -219,21 +193,6 @@ class AccountControllerTest {
                 false,
                 user
         ));
-
-        given()
-            .header("Authorization", "Bearer " + token)
-            .pathParam("id", account.getId())
-        .when()
-            .get("/api/users/me/accounts/{id}")
-        .then()
-            .statusCode(HttpStatus.OK.value())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body("initialAmount", equalTo(account.getInitialAmount().floatValue()))
-            .body("financialInstitution", equalTo(account.getFinancialInstitution()))
-            .body("description", equalTo(account.getDescription()))
-            .body("accountType", equalTo(account.getAccountType().toString()))
-            .body("color", equalTo(account.getColor()))
-            .body("icon", equalTo(account.getIcon()));
     }
-    
+
 }

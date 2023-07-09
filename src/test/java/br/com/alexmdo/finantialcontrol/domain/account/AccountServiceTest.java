@@ -1,27 +1,22 @@
 package br.com.alexmdo.finantialcontrol.domain.account;
 
-import br.com.alexmdo.finantialcontrol.domain.account.Account;
-import br.com.alexmdo.finantialcontrol.domain.account.AccountRepository;
-import br.com.alexmdo.finantialcontrol.domain.account.AccountService;
-import br.com.alexmdo.finantialcontrol.domain.account.AccountType;
+
 import br.com.alexmdo.finantialcontrol.domain.account.exception.AccountNotArchivedException;
 import br.com.alexmdo.finantialcontrol.domain.account.exception.AccountNotFoundException;
 import br.com.alexmdo.finantialcontrol.domain.user.User;
 import br.com.alexmdo.finantialcontrol.domain.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -32,10 +27,12 @@ class AccountServiceTest {
 
     @Mock
     private UserService userService;
-    
+
     @InjectMocks
     private AccountService accountService;
 
+    @Captor
+    private ArgumentCaptor<Account> accountCaptor;
 
     @BeforeEach
     void setUp() {
@@ -43,114 +40,189 @@ class AccountServiceTest {
     }
 
     @Test
-    void createAccount_ValidInput_ReturnsCreatedAccount() {
+    void createAccountAsync_ValidInput_CreatesAccount() {
         // Arrange
-        var account = new Account();
-        var user = new User(1L, "John", "Doe", "john@doe.com", "123456");
+        User user = new User();
+        user.setEmail("john");
+
+        Account account = new Account();
+        account.setId(1L);
         account.setUser(user);
+
+
+        when(userService.getUserByIdAndUserAsync(account.getUser().getId(), user))
+                .thenReturn(CompletableFuture.completedFuture(user));
         when(accountRepository.save(account)).thenReturn(account);
-        when(userService.getUserByIdAndUserAsync(1L, user)).thenReturn(CompletableFuture.completedFuture(user));
 
         // Act
-        var createdAccountFuture = accountService.createAccountAsync(account);
+        CompletableFuture<Account> futureAccount = accountService.createAccountAsync(account);
 
         // Assert
-        assertDoesNotThrow(createdAccountFuture::join);
-        var createdAccount = createdAccountFuture.join();
-        assertNotNull(createdAccount);
-        assertEquals(account, createdAccount);
-        verify(accountRepository, times(1)).save(account);
+        assertDoesNotThrow(futureAccount::join);
+        verify(userService).getUserByIdAndUserAsync(account.getUser().getId(), user);
+        verify(accountRepository).save(accountCaptor.capture());
+        assertEquals(user, accountCaptor.getValue().getUser());
     }
 
-
     @Test
-    void updateAccount_ValidInput_ReturnsUpdatedAccount() {
+    void updateAccountAsync_ValidInput_UpdatesAccount() {
         // Arrange
-        var accountId = 1L;
-        var existingAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
-                AccountType.CHECKING_ACCOUNT, "Blue", "Icon", false, null);
-        when(accountRepository.findById(accountId)).thenReturn(Optional.of(existingAccount));
-        when(accountRepository.save(existingAccount)).thenReturn(existingAccount);
+        Account updatedAccount = new Account();
+        updatedAccount.setId(1L);
+
+        when(accountRepository.save(updatedAccount)).thenReturn(updatedAccount);
 
         // Act
-        var updatedAccountFuture = accountService.updateAccountAsync(existingAccount);
+        CompletableFuture<Account> futureAccount = accountService.updateAccountAsync(updatedAccount);
 
         // Assert
-        assertDoesNotThrow(updatedAccountFuture::join);
-        var updatedAccount = updatedAccountFuture.join();
-        assertNotNull(updatedAccount);
-        assertEquals(existingAccount, updatedAccount);
-        verify(accountRepository, times(1)).save(existingAccount);
+        assertEquals(updatedAccount, futureAccount.join());
+        verify(accountRepository).save(updatedAccount);
     }
 
-
     @Test
-    void deleteAccount_ArchivedAccount_DeletesAccount() {
+    void deleteAccountByUserAsync_AccountArchived_DeletesAccount() {
         // Arrange
-        var accountId = 1L;
-        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
-        var archivedAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
-                AccountType.CHECKING_ACCOUNT, "Blue", "Icon", true, user);
-        when(accountRepository.findByIdAndUser(accountId, user)).thenReturn(Optional.of(archivedAccount));
+        Long accountId = 1L;
+        User user = new User();
+        user.setEmail("john");
 
-        // Act
-        var deleteAccountFuture = accountService.deleteAccountByUserAsync(accountId, user);
+        Account existingAccount = new Account();
+        existingAccount.setId(accountId);
+        existingAccount.setArchived(true);
 
-        // Assert
-        assertDoesNotThrow(deleteAccountFuture::join);
-        verify(accountRepository, times(1)).delete(archivedAccount);
-    }
-
-
-    @Test
-    void deleteAccount_NonArchivedAccount_ThrowsIllegalArgumentException() {
-        // Arrange
-        var accountId = 1L;
-        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
-        var nonArchivedAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
-                AccountType.CHECKING_ACCOUNT, "Blue", "Icon", false, null);
-        when(accountRepository.findByIdAndUser(accountId, user)).thenReturn(Optional.of(nonArchivedAccount));
-
-        // Act and Assert
-        assertThrows(CompletionException.class, () -> accountService.deleteAccountByUserAsync(accountId, user).join());
-        verify(accountRepository, times(0)).delete(any());
-    }
-
-
-    @Test
-    void getAccountById_ExistingAccountId_ReturnsAccount() {
-        // Arrange
-        var accountId = 1L;
-        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
-        var existingAccount = new Account(accountId, BigDecimal.valueOf(100), "Bank", "Description",
-                AccountType.CHECKING_ACCOUNT, "Blue", "Icon", false, null);
         when(accountRepository.findByIdAndUser(accountId, user)).thenReturn(Optional.of(existingAccount));
 
         // Act
-        var retrievedAccountFuture = accountService.getAccountByIdAndUserAsync(accountId, user);
+        CompletableFuture<Void> future = accountService.deleteAccountByUserAsync(accountId, user);
 
         // Assert
-        assertDoesNotThrow(retrievedAccountFuture::join);
-        var retrievedAccount = retrievedAccountFuture.join();
-        assertNotNull(retrievedAccount);
-        assertEquals(existingAccount, retrievedAccount);
+        assertDoesNotThrow(future::join);
+        verify(accountRepository).delete(existingAccount);
     }
-
 
     @Test
-    void getAccountById_NonExistingAccountId_ThrowsIllegalArgumentException() {
+    void deleteAccountByUserAsync_AccountNotArchived_ThrowsAccountNotArchivedException() {
         // Arrange
-        var nonExistingAccountId = 1L;
-        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
-        when(accountRepository.findByIdAndUser(nonExistingAccountId, user)).thenReturn(Optional.empty());
+        Long accountId = 1L;
+        User user = new User();
+        user.setEmail("john");
 
-        // Act and Assert
-        var exception = assertThrows(CompletionException.class,
-                () -> accountService.getAccountByIdAndUserAsync(nonExistingAccountId, user).join());
-        assertTrue(exception.getCause() instanceof AccountNotFoundException);
+        Account existingAccount = new Account();
+        existingAccount.setId(accountId);
+        existingAccount.setArchived(false);
+
+        when(accountRepository.findByIdAndUser(accountId, user)).thenReturn(Optional.of(existingAccount));
+
+        // Act
+        CompletableFuture<Void> future = accountService.deleteAccountByUserAsync(accountId, user);
+
+        // Assert
+        CompletionException completionException = assertThrows(CompletionException.class, future::join);
+        Throwable cause = completionException.getCause();
+        assertTrue(cause instanceof AccountNotArchivedException);
+        assertEquals("Cannot delete account. Archive it first.", cause.getMessage());
+        verify(accountRepository, never()).delete(existingAccount);
     }
 
+    @Test
+    void getAccountByIdAndUserAsync_AccountExists_ReturnsAccount() {
+        // Arrange
+        Long accountId = 1L;
+        User user = new User();
+        user.setEmail("john");
 
-    // ... write additional test cases for other methods
+        Account existingAccount = new Account();
+        existingAccount.setId(accountId);
 
+        when(accountRepository.findByIdAndUser(accountId, user)).thenReturn(Optional.of(existingAccount));
+
+        // Act
+        CompletableFuture<Account> futureAccount = accountService.getAccountByIdAndUserAsync(accountId, user);
+
+        // Assert
+        assertEquals(existingAccount, futureAccount.join());
+        verify(accountRepository).findByIdAndUser(accountId, user);
+    }
+
+    @Test
+    void getAccountByIdAndUserAsync_AccountNotFound_ThrowsAccountNotFoundException() {
+        // Arrange
+        Long accountId = 1L;
+        User user = new User();
+        user.setEmail("john");
+
+        when(accountRepository.findByIdAndUser(accountId, user)).thenReturn(Optional.empty());
+
+        // Act
+        CompletableFuture<Account> futureAccount = accountService.getAccountByIdAndUserAsync(accountId, user);
+
+        // Assert
+        CompletionException exception = assertThrows(CompletionException.class, futureAccount::join);
+        assertTrue(exception.getCause() instanceof AccountNotFoundException);
+        assertEquals("Account not found with id: 1", exception.getCause().getMessage());
+    }
+
+    @Test
+    void archiveAccountForUserAsync_AccountExists_ArchivesAccount() {
+        // Arrange
+        Long accountId = 1L;
+        User user = new User();
+        user.setEmail("john");
+
+        Account existingAccount = new Account();
+        existingAccount.setId(accountId);
+
+        when(accountRepository.findByIdAndUser(accountId, user)).thenReturn(Optional.of(existingAccount));
+        when(accountRepository.save(existingAccount)).thenReturn(existingAccount);
+
+        // Act
+        CompletableFuture<Account> futureAccount = accountService.archiveAccountForUserAsync(accountId, user);
+
+        // Assert
+        assertDoesNotThrow(futureAccount::join);
+        verify(accountRepository).findByIdAndUser(accountId, user);
+        verify(accountRepository).save(accountCaptor.capture());
+        assertTrue(accountCaptor.getValue().isArchived());
+    }
+
+    @Test
+    void archiveAccountForUserAsync_AccountNotFound_ThrowsAccountNotFoundException() {
+        // Arrange
+        Long accountId = 1L;
+        User user = new User();
+        user.setEmail("john");
+
+        when(accountRepository.findByIdAndUser(accountId, user)).thenReturn(Optional.empty());
+
+        // Act
+        CompletableFuture<Account> futureAccount = accountService.archiveAccountForUserAsync(accountId, user);
+
+        // Assert
+        CompletionException completionException = assertThrows(CompletionException.class, futureAccount::join);
+        Throwable actualException = completionException.getCause();
+        assertTrue(actualException instanceof AccountNotFoundException);
+        assertEquals("Account not found with id: 1", actualException.getMessage());
+    }
+
+    @Test
+    void getAllAccountsByUserAsync_ValidInput_ReturnsPageOfAccounts() {
+        // Arrange
+        User user = new User();
+        user.setEmail("john");
+        Pageable pageable = Pageable.unpaged();
+
+        Page<Account> accountPage = mock(Page.class);
+
+        when(accountRepository.findAllByUser(pageable, user)).thenReturn(accountPage);
+
+        // Act
+        CompletableFuture<Page<Account>> futurePage = accountService.getAllAccountsByUserAsync(pageable, user);
+
+        // Assert
+        assertEquals(accountPage, futurePage.join());
+        verify(accountRepository).findAllByUser(pageable, user);
+    }
+
+    // Additional tests for fallback methods can be added if required.
 }
