@@ -1,4 +1,4 @@
-package br.com.alexmdo.finantialcontrol.category;
+package br.com.alexmdo.finantialcontrol.domain.category;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;

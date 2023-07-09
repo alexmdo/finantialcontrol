@@ -1,4 +1,4 @@
-package br.com.alexmdo.finantialcontrol.account;
+package br.com.alexmdo.finantialcontrol.domain.account;
 
 import br.com.alexmdo.finantialcontrol.domain.account.Account;
 import br.com.alexmdo.finantialcontrol.domain.account.AccountRepository;

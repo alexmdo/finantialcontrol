@@ -1,4 +1,4 @@
-package br.com.alexmdo.finantialcontrol.category;
+package br.com.alexmdo.finantialcontrol.domain.category;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;

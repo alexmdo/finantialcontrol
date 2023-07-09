@@ -1,4 +1,4 @@
-package br.com.alexmdo.finantialcontrol.user;
+package br.com.alexmdo.finantialcontrol.domain.user;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;

@@ -1,4 +1,4 @@
-package br.com.alexmdo.finantialcontrol.user;
+package br.com.alexmdo.finantialcontrol.domain.user;
 
 import br.com.alexmdo.finantialcontrol.domain.user.User;
 import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
