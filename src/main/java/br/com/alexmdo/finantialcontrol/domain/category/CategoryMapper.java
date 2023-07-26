@@ -19,14 +19,14 @@ public class CategoryMapper {
                 category.getType());
     }
 
-    public Category toEntity(CategoryCreateRequestDto createRequestDto) {
+    public Category toEntity(CategoryCreateRequestDto createRequestDto, User user) {
         return new Category(
                 null,
                 createRequestDto.name(),
                 createRequestDto.color(),
                 createRequestDto.icon(),
                 createRequestDto.type(),
-                new User(createRequestDto.userId(), null, null, null, null));
+                user);
     }
 
     public Category updateEntity(Category existingCategory, CategoryUpdateRequestDto updateRequestDto) {

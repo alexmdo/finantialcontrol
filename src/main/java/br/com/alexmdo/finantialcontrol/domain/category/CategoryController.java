@@ -37,7 +37,7 @@ public class CategoryController extends BaseController {
 
     @PostMapping
     public CompletableFuture<ResponseEntity<CategoryDto>> createCategoryAsync(@Valid @RequestBody CategoryCreateRequestDto createRequestDto) {
-        var category = categoryMapper.toEntity(createRequestDto);
+        var category = categoryMapper.toEntity(createRequestDto, super.getPrincipal());
         return categoryService
                 .createCategoryAsync(category)
                 .thenApply(createdCategory -> {
@@ -65,7 +65,8 @@ public class CategoryController extends BaseController {
     @DeleteMapping("/{id}")
     public CompletableFuture<ResponseEntity<Void>> deleteCategoryAsync(@PathVariable("id") Long id) {
         return categoryService
-                .deleteCategoryByUserAsync(id, super.getPrincipal())
+                .getCategoryByIdAndUserAsync(id, super.getPrincipal())
+                .thenCompose(existingCategory -> categoryService.deleteCategoryAsync(existingCategory.getId()))
                 .thenApply(__ -> ResponseEntity.noContent().build());
     }
 

@@ -1,6 +1,7 @@
 package br.com.alexmdo.finantialcontrol.domain.category;
 
 import br.com.alexmdo.finantialcontrol.domain.category.exception.CategoryAlreadyExistsException;
+import br.com.alexmdo.finantialcontrol.domain.user.UserService;
 import br.com.alexmdo.finantialcontrol.infra.BusinessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final UserService userService;
 
     @Transactional
     @CircuitBreaker(name = "createCategory", fallbackMethod = "createCategoryFallback")
@@ -40,12 +42,12 @@ public class CategoryService {
     }
 
     @Transactional
-    @CircuitBreaker(name = "deleteCategoryByUser", fallbackMethod = "deleteCategoryByUserFallback")
+    @CircuitBreaker(name = "deleteCategoryByUser", fallbackMethod = "deleteCategoryFallback")
     @TimeLimiter(name = "deleteCategoryByUser")
-    public CompletableFuture<Void> deleteCategoryByUserAsync(Long id, User user) {
+    public CompletableFuture<Void> deleteCategoryAsync(Long id) {
         return CompletableFuture
                 .supplyAsync(() -> categoryRepository
-                        .findByIdAndUser(id, user)
+                        .findById(id)
                         .orElseThrow(() -> new CategoryNotFoundException("Category not found given the id")))
                 .thenCompose(category -> {
                     categoryRepository.delete(category);
@@ -101,7 +103,7 @@ public class CategoryService {
         }
     }
 
-    public CompletableFuture<Void> deleteCategoryByUserFallback(Long id, User user, Throwable throwable) {
+    public CompletableFuture<Void> deleteCategoryFallback(Long id, Throwable throwable) {
         // Fallback logic for deleteCategoryByUserAsync
         if (throwable instanceof BusinessException) {
             throw (BusinessException) throwable;

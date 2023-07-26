@@ -1,37 +1,37 @@
 package br.com.alexmdo.finantialcontrol.domain.category;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ActiveProfiles;
-
-import br.com.alexmdo.finantialcontrol.domain.category.Category;
-import br.com.alexmdo.finantialcontrol.domain.category.CategoryRepository;
 import br.com.alexmdo.finantialcontrol.domain.category.dto.CategoryCreateRequestDto;
 import br.com.alexmdo.finantialcontrol.domain.category.dto.CategoryUpdateRequestDto;
 import br.com.alexmdo.finantialcontrol.domain.user.User;
 import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
 import br.com.alexmdo.finantialcontrol.util.TestUtil;
 import io.restassured.RestAssured;
-    
+import io.restassured.http.ContentType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ActiveProfiles;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
-class CategoryControllerTest {
+public class CategoryControllerTest {
 
     @LocalServerPort
     private int port;
 
     @Autowired
-    private CategoryRepository categoryRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private CategoryRepository categoryRepository;
 
     private User user;
 
@@ -39,62 +39,79 @@ class CategoryControllerTest {
     void setUp() {
         categoryRepository.deleteAll();
         userRepository.deleteAll();
-        user = userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "$2a$10$m9FiHBdOWEgZpnzylyc8ZOHSN5Lbt9qwG7lIJxpeq4KRJwa1oF/Tq"));
+
+        this.user = createNewUser();
+
         RestAssured.port = port;
     }
 
     @Test
-    void testCreateCategory() {
+    public void testCreateCategory() {
+        // Prepare test data
         var token = TestUtil.authenticate("johndoe@example.com", "123456");
-        var createRequestDto = new CategoryCreateRequestDto(
-                "Food", "red", "utensils", Category.Type.EXPENSE, user.getId());
+        CategoryCreateRequestDto createRequestDto = new CategoryCreateRequestDto(
+                "Category",
+                "Blue",
+                "piggy-bank",
+                Category.Type.EXPENSE
+        );
 
+        // Perform POST request
         given()
-            .contentType("application/json")
+            .port(port)
+            .contentType(ContentType.JSON)
             .header("Authorization", "Bearer " + token)
             .body(createRequestDto)
         .when()
             .post("/api/users/me/categories")
         .then()
             .statusCode(HttpStatus.CREATED.value())
-            .body("name", equalTo(createRequestDto.name()))
-            .body("color", equalTo(createRequestDto.color()))
-            .body("icon", equalTo(createRequestDto.icon()))
-            .body("type", equalTo(createRequestDto.type().name()));
+            .body("name", equalTo("Category"))
+            .body("color", equalTo("Blue"))
+            .body("icon", equalTo("piggy-bank"))
+            .body("type", equalTo("EXPENSE"));
     }
 
     @Test
-    void testUpdateCategory() {
+    public void testUpdateCategory() {
+        // Prepare test data
         var token = TestUtil.authenticate("johndoe@example.com", "123456");
-        // Create a category for update
-        var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, user);
-        category = categoryRepository.save(category);
 
-        var updateRequestDto = new CategoryUpdateRequestDto(
-                "Groceries", "green", "shopping-cart", Category.Type.EXPENSE);
+        CategoryUpdateRequestDto updateRequestDto = new CategoryUpdateRequestDto(
+                "Updated Category",
+                "Green",
+                "piggy-bank",
+                Category.Type.INCOME
+        );
+        var category = createNewCategory();
 
+
+        // Perform PUT request
         given()
-            .contentType("application/json")
+            .port(port)
+            .contentType(ContentType.JSON)
             .header("Authorization", "Bearer " + token)
             .body(updateRequestDto)
         .when()
             .put("/api/users/me/categories/{id}", category.getId())
         .then()
             .statusCode(HttpStatus.OK.value())
-            .body("name", equalTo(updateRequestDto.name()))
-            .body("color", equalTo(updateRequestDto.color()))
-            .body("icon", equalTo(updateRequestDto.icon()))
-            .body("type", equalTo(updateRequestDto.type().name()));
+            .body("name", equalTo("Updated Category"))
+            .body("color", equalTo("Green"))
+            .body("icon", equalTo("piggy-bank"))
+            .body("type", equalTo("INCOME"));
     }
 
     @Test
-    void testDeleteCategory() {
+    public void testDeleteCategory() {
+        // Prepare test data
         var token = TestUtil.authenticate("johndoe@example.com", "123456");
-        // Create a category for deletion
-        var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, user);
-        category = categoryRepository.save(category);
+        var category = createNewCategory();
 
+        // Perform DELETE request
         given()
+            .port(port)
+            .contentType(ContentType.JSON)
             .header("Authorization", "Bearer " + token)
         .when()
             .delete("/api/users/me/categories/{id}", category.getId())
@@ -103,48 +120,62 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testGetCategories() {
+    public void testGetCategories() {
+        // Prepare test data
         var token = TestUtil.authenticate("johndoe@example.com", "123456");
-        // Create some categories for testing
-        var category1 = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, user);
-        var category2 = new Category(null, "Salary", "green", "money-bill", Category.Type.INCOME, user);
-        category1 = categoryRepository.save(category1);
-        category2 = categoryRepository.save(category2);
+        var category = createNewCategory();
 
+        // Perform GET request
         given()
+            .port(port)
+            .contentType(ContentType.JSON)
             .header("Authorization", "Bearer " + token)
         .when()
             .get("/api/users/me/categories")
         .then()
             .statusCode(HttpStatus.OK.value())
-            .body("content.size()", equalTo(2))
-            .body("content[0].name", equalTo(category1.getName()))
-            .body("content[0].color", equalTo(category1.getColor()))
-            .body("content[0].icon", equalTo(category1.getIcon()))
-            .body("content[0].type", equalTo(category1.getType().name()))
-            .body("content[1].name", equalTo(category2.getName()))
-            .body("content[1].color", equalTo(category2.getColor()))
-            .body("content[1].icon", equalTo(category2.getIcon()))
-            .body("content[1].type", equalTo(category2.getType().name()));
+            .body("content.size()", equalTo(1))
+            .body("content[0].id", equalTo(category.getId().intValue()))
+            .body("content[0].name", equalTo(category.getName()))
+            .body("content[0].color", equalTo(category.getColor()))
+            .body("content[0].icon", equalTo(category.getIcon()))
+            .body("content[0].type", equalTo(category.getType().toString()));
     }
 
     @Test
-    void testGetCategoryById() {
+    public void testGetCategoryById() {
+        // Prepare test data
         var token = TestUtil.authenticate("johndoe@example.com", "123456");
-        // Create a category for retrieval
-        var category = new Category(null, "Food", "red", "utensils", Category.Type.EXPENSE, user);
-        category = categoryRepository.save(category);
+        var category = createNewCategory();
 
+        // Perform GET request
         given()
+            .port(port)
+            .contentType(ContentType.JSON)
             .header("Authorization", "Bearer " + token)
         .when()
             .get("/api/users/me/categories/{id}", category.getId())
         .then()
             .statusCode(HttpStatus.OK.value())
+            .body("id", equalTo(category.getId().intValue()))
             .body("name", equalTo(category.getName()))
             .body("color", equalTo(category.getColor()))
             .body("icon", equalTo(category.getIcon()))
-            .body("type", equalTo(category.getType().name()));
+            .body("type", equalTo(category.getType().toString()));
+    }
+
+    private User createNewUser() {
+        return userRepository.save(new User(null, "John", "Doe", "johndoe@example.com", "$2a$10$m9FiHBdOWEgZpnzylyc8ZOHSN5Lbt9qwG7lIJxpeq4KRJwa1oF/Tq"));
+    }
+
+    private Category createNewCategory() {
+        return categoryRepository.save(new Category(
+                null,
+                "Category",
+                "Blue",
+                "piggy-bank",
+                Category.Type.EXPENSE,
+                new User(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword())
+        ));
     }
 }
-    

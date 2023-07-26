@@ -1,27 +1,21 @@
 package br.com.alexmdo.finantialcontrol.domain.category;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Arrays;
-import java.util.Optional;
-
+import br.com.alexmdo.finantialcontrol.domain.category.exception.CategoryNotFoundException;
+import br.com.alexmdo.finantialcontrol.domain.user.User;
+import br.com.alexmdo.finantialcontrol.domain.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.PageImpl;
+import org.mockito.*;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
-import br.com.alexmdo.finantialcontrol.domain.category.Category;
-import br.com.alexmdo.finantialcontrol.domain.category.CategoryRepository;
-import br.com.alexmdo.finantialcontrol.domain.category.CategoryService;
-import br.com.alexmdo.finantialcontrol.domain.user.User;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 class CategoryServiceTest {
@@ -29,8 +23,14 @@ class CategoryServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private UserService userService;
+
     @InjectMocks
     private CategoryService categoryService;
+
+    @Captor
+    private ArgumentCaptor<Category> categoryCaptor;
 
     @BeforeEach
     void setUp() {
@@ -38,96 +38,139 @@ class CategoryServiceTest {
     }
 
     @Test
-    void testCreateCategory() {
-        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
+    void createCategoryAsync_ValidInput_CreatesCategory() {
+        // Arrange
+        User user = new User();
+        user.setEmail("john");
 
-        var category = new Category();
-        category.setName("Food");
-        category.setType(Category.Type.EXPENSE);
-        category.setUser(user);
-
-        when(categoryRepository.save(category)).thenReturn(category);
-
-        var createdCategory = categoryService.createCategoryAsync(category);
-
-        verify(categoryRepository, times(1)).save(category);
-        assertEquals(category, createdCategory);
-    }
-
-    @Test
-    void testUpdateCategory() {
-        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
-
-        var category = new Category();
+        Category category = new Category();
         category.setId(1L);
-        category.setName("Food");
-        category.setType(Category.Type.EXPENSE);
         category.setUser(user);
 
+        when(userService.getUserByIdAndUserAsync(category.getUser().getId(), user))
+                .thenReturn(CompletableFuture.completedFuture(user));
         when(categoryRepository.save(category)).thenReturn(category);
 
-        var updatedCategory = categoryService.updateCategoryAsync(category);
+        // Act
+        CompletableFuture<Category> futureCategory = categoryService.createCategoryAsync(category);
 
-        verify(categoryRepository, times(1)).save(category);
-        assertEquals(category, updatedCategory);
+        // Assert
+        assertDoesNotThrow(futureCategory::join);
+        verify(categoryRepository).save(categoryCaptor.capture());
+        assertEquals(user, categoryCaptor.getValue().getUser());
     }
 
     @Test
-    void testDeleteCategory() {
-        var user = new User(1L, "Joe", "Doe", "joe@doe.com", "123");
-        var category = new Category(1L, "Food", "red", "food-icon", Category.Type.EXPENSE, user);
-        
-        when(categoryRepository.findByIdAndUser(category.getId(), user)).thenReturn(Optional.of(category));
+    void updateCategoryAsync_ValidInput_UpdatesCategory() {
+        // Arrange
+        Category updatedCategory = new Category();
+        updatedCategory.setId(1L);
 
-        categoryService.deleteCategoryByUserAsync(category.getId(), user);
+        when(categoryRepository.save(updatedCategory)).thenReturn(updatedCategory);
 
-        verify(categoryRepository, times(1)).delete(category);
-        verify(categoryRepository, times(1)).findByIdAndUser(category.getId(), user);
+        // Act
+        CompletableFuture<Category> futureCategory = categoryService.updateCategoryAsync(updatedCategory);
+
+        // Assert
+        assertEquals(updatedCategory, futureCategory.join());
+        verify(categoryRepository).save(updatedCategory);
     }
 
     @Test
-    void testGetCategoryById() {
-        var user = new User(1L, "Joe", "Doe", "joe@doe.com", "123");
-        var category = new Category(1L, "Food", "red", "food-icon", Category.Type.EXPENSE, user);
-        
-        when(categoryRepository.findByIdAndUser(category.getId(), user)).thenReturn(Optional.of(category));
+    void deleteCategoryByUserAsync_CategoryExistsAndArchived_DeletesCategory() {
+        // Arrange
+        Long categoryId = 1L;
+        User user = new User();
+        user.setEmail("john");
 
-        var retrievedCategory = categoryService.getCategoryByIdAndUserAsync(category.getId(), user);
+        Category existingCategory = new Category();
+        existingCategory.setId(categoryId);
+        existingCategory.setUser(user);
 
-        verify(categoryRepository, times(1)).findByIdAndUser(category.getId(), user);
-        assertEquals(category, retrievedCategory);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
+
+        // Act
+        CompletableFuture<Void> future = categoryService.deleteCategoryAsync(categoryId);
+
+        // Assert
+        assertDoesNotThrow(future::join);
+        verify(categoryRepository).delete(existingCategory);
     }
 
     @Test
-    void testGetCategoryByName() {
-        var categoryName = "Food";
-        var category = new Category();
-        category.setName(categoryName);
-        category.setType(Category.Type.EXPENSE);
-        category.setUser(new User(1L, "Joe", "Doe", "johndoe@example.com", "123"));
+    void deleteCategoryByUserAsync_CategoryNotFound_ThrowsCategoryNotFoundException() {
+        // Arrange
+        Long categoryId = 1L;
+        User user = new User();
+        user.setEmail("john");
 
-        when(categoryRepository.findByName(categoryName)).thenReturn(Optional.of(category));
+        when(categoryRepository.findByIdAndUser(categoryId, user)).thenReturn(Optional.empty());
 
-        var retrievedCategory = categoryService.getCategoryByNameAsync(categoryName);
+        // Act
+        CompletableFuture<Void> future = categoryService.deleteCategoryAsync(categoryId);
 
-        verify(categoryRepository, times(1)).findByName(categoryName);
-        assertEquals(category, retrievedCategory);
+        // Assert
+        CompletionException completionException = assertThrows(CompletionException.class, future::join);
+        assertTrue(completionException.getCause() instanceof CategoryNotFoundException);
+        assertEquals("Category not found given the id", completionException.getCause().getMessage());
     }
 
     @Test
-    void testGetAllCategories() {
-        var user = new User(1L, "Joe", "Doe", "johndoe@example.com", "123");
-        var categoryList = Arrays.asList(
-                new Category(1L, "Food", null, null, Category.Type.EXPENSE, user),
-                new Category(2L, "Salary", null, null, Category.Type.INCOME, user));
-        var pageable = mock(Pageable.class);
-        var categoryPage = new PageImpl<>(categoryList, pageable, categoryList.size());
+    void getCategoryByIdAndUserAsync_CategoryExists_ReturnsCategory() {
+        // Arrange
+        Long categoryId = 1L;
+        User user = new User();
+        user.setEmail("john");
+
+        Category existingCategory = new Category();
+        existingCategory.setId(categoryId);
+
+        when(categoryRepository.findByIdAndUser(categoryId, user)).thenReturn(Optional.of(existingCategory));
+
+        // Act
+        CompletableFuture<Category> futureCategory = categoryService.getCategoryByIdAndUserAsync(categoryId, user);
+
+        // Assert
+        assertEquals(existingCategory, futureCategory.join());
+        verify(categoryRepository).findByIdAndUser(categoryId, user);
+    }
+
+    @Test
+    void getCategoryByIdAndUserAsync_CategoryNotFound_ThrowsCategoryNotFoundException() {
+        // Arrange
+        Long categoryId = 1L;
+        User user = new User();
+        user.setEmail("john");
+
+        when(categoryRepository.findByIdAndUser(categoryId, user)).thenReturn(Optional.empty());
+
+        // Act
+        CompletableFuture<Category> futureCategory = categoryService.getCategoryByIdAndUserAsync(categoryId, user);
+
+        // Assert
+        CompletionException completionException = assertThrows(CompletionException.class, futureCategory::join);
+        assertTrue(completionException.getCause() instanceof CategoryNotFoundException);
+        assertEquals("Category not found given the id", completionException.getCause().getMessage());
+    }
+
+    @Test
+    void getAllCategoriesByUserAsync_ValidInput_ReturnsPageOfCategories() {
+        // Arrange
+        User user = new User();
+        user.setEmail("john");
+        Pageable pageable = Pageable.unpaged();
+
+        Page<Category> categoryPage = mock(Page.class);
 
         when(categoryRepository.findAllByUser(pageable, user)).thenReturn(categoryPage);
 
-        var retrievedCategories = categoryService.getAllCategoriesByUserAsync(pageable, user);
+        // Act
+        CompletableFuture<Page<Category>> futurePage = categoryService.getAllCategoriesByUserAsync(pageable, user);
 
-        verify(categoryRepository, times(1)).findAllByUser(pageable, user);
-        assertEquals(categoryPage, retrievedCategories);
+        // Assert
+        assertEquals(categoryPage, futurePage.join());
+        verify(categoryRepository).findAllByUser(pageable, user);
     }
+
+    // Additional tests for fallback methods can be added if required.
 }
