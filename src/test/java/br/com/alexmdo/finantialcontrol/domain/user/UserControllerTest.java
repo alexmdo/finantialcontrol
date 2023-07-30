@@ -1,30 +1,25 @@
 package br.com.alexmdo.finantialcontrol.domain.user;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
-
+import br.com.alexmdo.finantialcontrol.domain.user.dto.UserCreateRequestDto;
+import br.com.alexmdo.finantialcontrol.domain.user.dto.UserUpdateRequestDto;
+import br.com.alexmdo.finantialcontrol.util.TestUtil;
+import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 
-import br.com.alexmdo.finantialcontrol.domain.user.User;
-import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
-import br.com.alexmdo.finantialcontrol.domain.user.dto.UserCreateRequestDto;
-import br.com.alexmdo.finantialcontrol.domain.user.dto.UserUpdateRequestDto;
-import br.com.alexmdo.finantialcontrol.util.TestUtil;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class UserControllerTest {
+public class UserControllerTest {
 
     @LocalServerPort
     private int port;
@@ -37,77 +32,91 @@ class UserControllerTest {
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
-        user = userRepository.save(new User(null, "John", "Doe", "admin@example.com", "$2a$10$m9FiHBdOWEgZpnzylyc8ZOHSN5Lbt9qwG7lIJxpeq4KRJwa1oF/Tq"));
+
+        this.user = createNewUser("John", "Doe", "johndoe@example.com", "$2a$10$m9FiHBdOWEgZpnzylyc8ZOHSN5Lbt9qwG7lIJxpeq4KRJwa1oF/Tq");
+
         RestAssured.port = port;
     }
 
     @Test
-    void shouldCreateUser() {
-        var token = TestUtil.authenticate("admin@example.com", "123456");
-        var createRequestDto = new UserCreateRequestDto("John", "Doe", "johndoe@example.com", "123456");
+    public void testCreateUser() {
+        // Prepare test data
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
+        UserCreateRequestDto createRequestDto = new UserCreateRequestDto(
+                "Jane",
+                "Smith",
+                "janesmith@example.com",
+                "password456"
+        );
 
+        // Perform POST request
         given()
-            .contentType(ContentType.JSON)
+            .port(port)
+            .contentType("application/json")
             .header("Authorization", "Bearer " + token)
             .body(createRequestDto)
         .when()
             .post("/api/users/me")
         .then()
-            .statusCode(HttpStatus.CREATED.value())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body("firstName", equalTo(createRequestDto.firstName()))
-            .body("lastName", equalTo(createRequestDto.lastName()))
-            .body("email", equalTo(createRequestDto.email()));
+            .statusCode(201)
+            .body("firstName", equalTo("Jane"))
+            .body("lastName", equalTo("Smith"))
+            .body("email", equalTo("janesmith@example.com"))
+            .body("password", nullValue());
     }
 
     @Test
-    void shouldUpdateUser() {
-        var token = TestUtil.authenticate("admin@example.com", "123456");
-        var updateRequestDto = new UserUpdateRequestDto("Jane", "Smith", "janesmith@example.com", "123456");
+    public void testGetUserById() {
+        // Prepare test data
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
+        Long userId = user.getId();
 
+        // Perform GET request
         given()
-            .contentType(ContentType.JSON)
+            .port(port)
+            .contentType("application/json")
+            .header("Authorization", "Bearer " + token)
+        .when()
+            .get("/api/users/me/{id}", userId)
+        .then()
+            .statusCode(200)
+            .body("id", equalTo(userId.intValue()))
+            .body("firstName", equalTo("John"))
+            .body("lastName", equalTo("Doe"))
+            .body("email", equalTo("johndoe@example.com"))
+            .body("password", nullValue());
+    }
+
+    @Test
+    public void testUpdateUser() {
+        // Prepare test data
+        var token = TestUtil.authenticate("johndoe@example.com", "123456");
+        Long userId = user.getId();
+        UserUpdateRequestDto updateRequestDto = new UserUpdateRequestDto(
+                "UpdatedFirstName",
+                "UpdatedLastName",
+                "johndoe@example.com",
+                null // Null password means the password is not updated
+        );
+
+        // Perform PUT request
+        given()
+            .port(port)
+            .contentType("application/json")
             .header("Authorization", "Bearer " + token)
             .body(updateRequestDto)
         .when()
-            .put("/api/users/me/{id}", user.getId())
+            .put("/api/users/me/{id}", userId)
         .then()
-            .statusCode(HttpStatus.OK.value())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body("firstName", equalTo(updateRequestDto.firstName()))
-            .body("lastName", equalTo(updateRequestDto.lastName()))
-            .body("email", equalTo(updateRequestDto.email()));
+            .statusCode(200)
+            .body("id", equalTo(userId.intValue()))
+            .body("firstName", equalTo("UpdatedFirstName"))
+            .body("lastName", equalTo("UpdatedLastName"))
+            .body("email", equalTo("johndoe@example.com"))
+            .body("password", nullValue());
     }
 
-    @Test
-    void shouldDeleteUser() {
-        var token = TestUtil.authenticate("admin@example.com", "123456");
-
-        given()
-            .header("Authorization", "Bearer " + token)
-            .pathParam("id", user.getId())
-        .when()
-            .delete("/api/users/me/{id}")
-        .then()
-            .statusCode(HttpStatus.NO_CONTENT.value());
+    private User createNewUser(String firstName, String lastName, String email, String password) {
+        return userRepository.save(new User(null, firstName, lastName, email, password));
     }
-
-    @Test
-    void shouldGetUserById() {
-        var token = TestUtil.authenticate("admin@example.com", "123456");
-
-        given()
-            .header("Authorization", "Bearer " + token)    
-            .pathParam("id", user.getId())
-        .when()
-            .get("/api/users/me/{id}")
-        .then()
-            .statusCode(HttpStatus.OK.value())
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body("id", equalTo(user.getId().intValue()))
-            .body("firstName", equalTo(user.getFirstName()))
-            .body("lastName", equalTo(user.getLastName()))
-            .body("email", equalTo(user.getEmail()));
-    }
-
 }

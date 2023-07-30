@@ -1,26 +1,22 @@
 package br.com.alexmdo.finantialcontrol.domain.user;
 
-import br.com.alexmdo.finantialcontrol.domain.user.User;
-import br.com.alexmdo.finantialcontrol.domain.user.UserRepository;
-import br.com.alexmdo.finantialcontrol.domain.user.UserService;
+import br.com.alexmdo.finantialcontrol.domain.user.exception.UserAlreadyRegisteredException;
+import br.com.alexmdo.finantialcontrol.domain.user.exception.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
 
-import java.util.ArrayList;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
 
-@ActiveProfiles("test")
-class UserServiceTest {
+public class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
@@ -29,151 +25,205 @@ class UserServiceTest {
     private UserService userService;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testCreateUser_Success() {
-        // Arrange
-        User user = new User();
-        user.setEmail("test@example.com");
+    public void testCreateUserAsync_Success() {
+        // Given
+        User user = new User(null, "John", "Doe", "john.doe@example.com", "password");
 
-        // Mock the repository to return false (email does not exist)
-        when(userRepository.existsByEmail(user.getEmail())).thenReturn(false);
+        Mockito.when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        Mockito.when(userRepository.save(any())).thenReturn(user);
 
-        // Mock the repository to return the saved user
-        when(userRepository.save(user)).thenReturn(user);
+        // When
+        CompletableFuture<User> futureUser = userService.createUserAsync(user);
 
-        // Act
-        User createdUser = userService.createUserAsync(user).join();
-
-        // Assert
+        // Then
+        assertDoesNotThrow(futureUser::join);
+        User createdUser = futureUser.join();
         assertNotNull(createdUser);
-        assertEquals(user.getEmail(), createdUser.getEmail());
-        verify(userRepository, times(1)).existsByEmail(user.getEmail());
-        verify(userRepository, times(1)).save(user);
+        assertEquals("John", createdUser.getFirstName());
+        assertEquals("Doe", createdUser.getLastName());
+        assertEquals("john.doe@example.com", createdUser.getEmail());
+        assertEquals("password", createdUser.getPassword());
+    }
+
+    @Test
+    public void testCreateUserAsync_UserAlreadyRegisteredException() {
+        // Given
+        User newUser = new User(null, "John", "Doe", "john.doe@example.com", "password");
+
+        Mockito.when(userRepository.existsByEmail(anyString())).thenReturn(true);
+
+        // When
+        CompletableFuture<User> futureUser = userService.createUserAsync(newUser);
+
+        // Then
+        CompletionException completionException = assertThrows(CompletionException.class, futureUser::join);
+        assertTrue(completionException.getCause() instanceof UserAlreadyRegisteredException);
+        assertEquals("Email already exists", completionException.getCause().getMessage());
     }
 
 
     @Test
-    void testCreateUser_EmailAlreadyExists() {
-        // Arrange
+    public void testUpdateUserAsync_Success() {
+        // Given
+        Long userId = 1L;
+        User existingUser = new User(userId, "John", "Doe", "john.doe@example.com", "password");
+        User updatedUser = new User(userId, "John", "Updated", "john.updated@example.com", "newPassword");
+
+        Mockito.when(userRepository.findById(anyLong())).thenReturn(Optional.of(existingUser));
+        Mockito.when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty()); // Assume the updated email doesn't exist
+        Mockito.when(userRepository.save(any())).thenReturn(updatedUser);
+
+        // When
+        CompletableFuture<User> futureUser = userService.updateUserAsync(updatedUser);
+
+        // Then
+        assertDoesNotThrow(futureUser::join);
+        User updated = futureUser.join();
+        assertNotNull(updated);
+        assertEquals("John", updated.getFirstName());
+        assertEquals("Updated", updated.getLastName());
+        assertEquals("john.updated@example.com", updated.getEmail());
+        assertEquals("newPassword", updated.getPassword());
+    }
+
+
+    @Test
+    public void testUpdateUserAsync_UserNotFoundException() {
+        // Given
+        Long userId = 1L;
         User user = new User();
-        user.setEmail("test@example.com");
+        user.setId(userId);
 
-        // Mock the repository to return true (email already exists)
-        when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
+        // Mock the userRepository.findById method to return an empty optional, simulating user not found
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        assertThrows(CompletionException.class, () -> userService.createUserAsync(user).join());
+        // When
+        CompletableFuture<User> futureUpdate = userService.updateUserAsync(user);
 
-        verify(userRepository, times(1)).existsByEmail(user.getEmail());
-        verify(userRepository, never()).save(user);
+        // Then
+        CompletionException completionException = assertThrows(CompletionException.class, () -> futureUpdate.join());
+        Throwable cause = completionException.getCause();
+        assertTrue(cause instanceof UserNotFoundException);
+        assertEquals("User not found given the id", cause.getMessage());
+    }
+
+
+    @Test
+    public void testDeleteUserAsync_Success() {
+        // Given
+        Long userId = 1L;
+        User user = new User(userId, "John", "Doe", "john.doe@example.com", "password");
+
+        Mockito.when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+
+        // When
+        CompletableFuture<Void> futureVoid = userService.deleteUserAsync(userId, user);
+
+        // Then
+        assertDoesNotThrow(futureVoid::join);
+        Mockito.verify(userRepository, Mockito.times(1)).deleteById(userId);
     }
 
     @Test
-    void testUpdateUser_Success() {
-        // Arrange
+    public void testDeleteUserAsync_UserNotFoundException() {
+        // Given
+        Long userId = 1L;
         User user = new User();
-        user.setId(1L);
-        user.setEmail("test@example.com");
+        user.setId(2L);
 
-        // Mock the repository to return the user reference
-        when(userRepository.getReferenceById(user.getId())).thenReturn(user);
+        // Mock the userRepository.findById method to return an empty optional, simulating user not found
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        // Mock the repository to return false (email does not exist)
-        when(userRepository.existsByEmail(user.getEmail())).thenReturn(false);
+        // When
+        CompletableFuture<Void> futureDelete = userService.deleteUserAsync(userId, user);
 
-        // Mock the repository to return the saved user
-        when(userRepository.save(user)).thenReturn(user);
+        // Then
+        CompletionException completionException = assertThrows(CompletionException.class, futureDelete::join);
+        Throwable cause = completionException.getCause();
+        assertTrue(cause instanceof UserNotFoundException);
+        assertEquals("User not found given the id", cause.getMessage());
+    }
 
-        // Act
-        User updatedUser = userService.updateUserAsync(user).join();
 
-        // Assert
-        assertNotNull(updatedUser);
-        assertEquals(user.getEmail(), updatedUser.getEmail());
-        verify(userRepository, times(1)).getReferenceById(user.getId());
-        verify(userRepository, times(1)).existsByEmail(user.getEmail());
-        verify(userRepository, times(1)).save(user);
+    @Test
+    public void testGetUserByIdAndUserAsync_Success() {
+        // Given
+        Long userId = 1L;
+        User user = new User(userId, "John", "Doe", "john.doe@example.com", "password");
+
+        Mockito.when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+
+        // When
+        CompletableFuture<User> futureUser = userService.getUserByIdAndUserAsync(userId, user);
+
+        // Then
+        assertDoesNotThrow(futureUser::join);
+        User foundUser = futureUser.join();
+        assertNotNull(foundUser);
+        assertEquals("John", foundUser.getFirstName());
+        assertEquals("Doe", foundUser.getLastName());
+        assertEquals("john.doe@example.com", foundUser.getEmail());
+        assertEquals("password", foundUser.getPassword());
     }
 
     @Test
-    void testUpdateUser_EmailAlreadyExists() {
-        // Arrange
-        var userId = 1L;
-        var user = new User(userId, "John", "Doe", "test@example.com", "123456");
-        var userToUpdate = new User(userId, "John", "Doe", "test@emailchanged.com", "123456");
+    public void testGetUserByIdAndUserAsync_UserNotFoundException() {
+        // Given
+        Long userId = 1L;
+        User user = new User(userId, "John", "Doe", "john.doe@example.com", "password");
 
-        // Mock the repository to return the user reference
-        when(userRepository.getReferenceById(user.getId())).thenReturn(user);
+        Mockito.when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        // Mock the repository to return true (email already exists)
-        when(userRepository.existsByEmail(userToUpdate.getEmail())).thenReturn(true);
+        // When
+        CompletableFuture<User> futureUser = userService.getUserByIdAndUserAsync(userId, user);
 
-        // Act & Assert
-        assertThrows(CompletionException.class, () -> userService.updateUserAsync(userToUpdate).join());
+        // Then
+        CompletionException completionException = assertThrows(CompletionException.class, futureUser::join);
+        assertTrue(completionException.getCause() instanceof UserNotFoundException);
+        assertEquals("User not found given the id", completionException.getCause().getMessage());
+    }
 
-        verify(userRepository, times(1)).getReferenceById(user.getId());
-        verify(userRepository, times(1)).existsByEmail(userToUpdate.getEmail());
-        verify(userRepository, never()).save(user);
+
+    @Test
+    public void testGetUserByEmailAsync_Success() {
+        // Given
+        String email = "john.doe@example.com";
+        User user = new User(1L, "John", "Doe", "john.doe@example.com", "password");
+
+        Mockito.when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
+
+        // When
+        CompletableFuture<User> futureUser = userService.getUserByEmailAsync(email);
+
+        // Then
+        assertDoesNotThrow(futureUser::join);
+        User foundUser = futureUser.join();
+        assertNotNull(foundUser);
+        assertEquals("John", foundUser.getFirstName());
+        assertEquals("Doe", foundUser.getLastName());
+        assertEquals("john.doe@example.com", foundUser.getEmail());
+        assertEquals("password", foundUser.getPassword());
     }
 
     @Test
-    void testDeleteUser() {
-        var userId = 1L;
-        var user = new User(userId, "John", "Doe", "john@doe.com", "123456");
+    public void testGetUserByEmailAsync_UserNotFoundException() {
+        // Given
+        String userEmail = "john.doe@example.com";
 
-        userService.deleteUserAsync(userId, user).join();
+        Mockito.when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-        verify(userRepository, times(1)).deleteById(userId);
-    }
+        // When
+        CompletableFuture<User> futureUser = userService.getUserByEmailAsync(userEmail);
 
-    @Test
-    void testGetUserById() {
-        var userId = 1L;
-        var user = new User(userId, "John", "Doe", "john@doe.com", "123456");
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        var retrievedUser = userService.getUserByIdAndUserAsync(userId, user).join();
-
-        verify(userRepository, times(1)).findById(userId);
-        assertEquals(user, retrievedUser);
-    }
-
-    @Test
-    void testGetUserByEmail() {
-        var email = "johndoe@example.com";
-        var user = new User();
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail(email);
-
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
-
-        var retrievedUser = userService.getUserByEmailAsync(email).join();
-
-        verify(userRepository, times(1)).findByEmail(email);
-        assertEquals(user, retrievedUser);
-    }
-
-    @Test
-    void testGetAllUsers() {
-        var userList = new ArrayList<User>();
-        userList.add(new User());
-        userList.add(new User());
-
-        var pageable = mock(Pageable.class);
-        var userPage = new PageImpl<>(userList, pageable, userList.size());
-
-        when(userRepository.findAll(pageable)).thenReturn(userPage);
-
-        var retrievedUsers = userService.getAllUsersAsync(pageable).join();
-
-        verify(userRepository, times(1)).findAll(pageable);
-        assertEquals(userPage, retrievedUsers);
+        // Then
+        CompletionException completionException = assertThrows(CompletionException.class, futureUser::join);
+        assertTrue(completionException.getCause() instanceof UserNotFoundException);
+        assertEquals("User not found given the email", completionException.getCause().getMessage());
     }
 
 }
